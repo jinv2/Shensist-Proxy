@@ -1,0 +1,29 @@
+name: 🌐 神思庭全球发行版构建流水线
+
+on:
+  workflow_dispatch: # 允许你在 GitHub 网页上手动点击按钮触发打包
+
+jobs:
+  build-windows:
+    name: 编译 Windows EXE
+    runs-on: windows-latest
+    steps:
+    - name: 获取最新代码
+      uses: actions/checkout@v4
+      
+    - name: 配置 Python 环境
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        
+    - name: 安装终极封装引擎
+      run: pip install pyinstaller
+      
+    - name: 锻造 EXE 商业交付包
+      run: pyinstaller --onefile --name "神思庭·智信_V2026_Windows" shensist_auto_zhixin.py
+      
+    - name: 将成品上传至云端仓库
+      uses: actions/upload-artifact@v4
+      with:
+        name: Shensist-Windows-EXE
+        path: dist/神思庭·智信_V2026_Windows.exe
