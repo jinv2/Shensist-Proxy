@@ -11,3 +11,11 @@
 
 # GitHub Copilot Instructions
 .github/copilot-instructions.md
+不要/
+截屏/
+文档/
+真实沙盘演练/
+build/
+dist/
+*.spec
+*.md_旧版
