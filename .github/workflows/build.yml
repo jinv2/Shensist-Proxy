@@ -1,4 +1,4 @@
-name: 🌐 神思庭全球发行版构建流水线
+name: 神思庭全球发行版构建流水线
 
 on:
   workflow_dispatch:
@@ -20,10 +20,10 @@ jobs:
       run: pip install pyinstaller
       
     - name: 锻造 EXE 商业交付包
-      run: pyinstaller --onefile --name "神思庭·智信_V2026_Windows" shensist_auto_zhixin.py
+      run: pyinstaller --onefile --name "神思庭_智信_V2026_Windows" shensist_auto_zhixin.py
       
     - name: 将成品上传至云端仓库
       uses: actions/upload-artifact@v4
       with:
         name: Shensist-Windows-EXE
-        path: dist/神思庭·智信_V2026_Windows.exe
+        path: dist/神思庭_智信_V2026_Windows.exe
