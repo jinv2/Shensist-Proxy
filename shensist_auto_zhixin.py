@@ -1,5 +1,37 @@
-import json, urllib.request, os, time, sys
+import json, urllib.request, os, time, sys, hashlib, subprocess
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+# ==========================================
+# 神思庭·主权授权引擎 V1.0
+# ==========================================
+def get_node_fingerprint():
+    """提取机器唯一硬件指纹 (支持 Ubuntu/Windows/Mac)"""
+    try:
+        # 尝试获取 CPU 序列号或主板 ID
+        if os.name == 'posix': # Ubuntu 环境优先
+            cmd = "cat /var/lib/dbus/machine-id || cat /etc/machine-id"
+        else: # Windows 环境
+            cmd = "wmic cpu get processorid"
+        
+        raw_id = subprocess.check_output(cmd, shell=True).decode().strip()
+        # 使用 SHA-256 进行哈希并取前 16 位作为展示的"特征码"
+        return hashlib.sha256(raw_id.encode()).hexdigest()[:16].upper()
+    except:
+        return "SHENSIST-DEFAULT-NODE"
+
+def verify_license(node_id, license_key):
+    """
+    神思庭·智信 V1 全网通用授权逻辑
+    """
+    # 1. 设置一个霸气的通用口令（可随时在 GitHub 修改并重新打包）
+    GLOBAL_PASS = "SHENSIST-2026-GOD" 
+    
+    # 2. 只要匹配通用口令，或者匹配你私下算出的专属码，均可进入
+    master_key = hashlib.md5((node_id + "SHENSIST_SALT").encode()).hexdigest()[:12].upper()
+    
+    if license_key == GLOBAL_PASS or license_key == master_key:
+        return True
+    return False
 
 # ==========================================
 # 2026 协议：形意全算力兼容总线 + 多模态引擎
@@ -129,9 +161,13 @@ HTML_BODY = """
                 <div class="auth-tab" id="tab-apply" onclick="switchAuth('apply')">申请智信号</div>
             </div>
             <div id="form-login" class="auth-form active">
+                <div style="background:#111; padding:10px; border-radius:6px; margin-bottom:15px; border:1px solid #333;">
+                    <div style="font-size:11px; color:var(--sora-muted);">您的物理节点特征码 (请发给神思庭获取授权)：</div>
+                    <div id="display-hwid" style="font-size:14px; color:var(--sora-accent); font-weight:bold; letter-spacing:1px;">加载中...</div>
+                </div>
                 <input type="text" id="node-id" class="auth-input" placeholder="输入您的 智信号">
-                <input type="password" id="pass-key" class="auth-input" placeholder="输入节点激活码">
-                <button class="btn-launch" style="width:100%; margin-top:10px;" onclick="connect()">授 权 登 入</button>
+                <input type="password" id="pass-key" class="auth-input" placeholder="输入专属激活密钥 (License Key)">
+                <button class="btn-launch" style="width:100%; margin-top:10px;" onclick="connect()">授 权 登 入 节 点</button>
             </div>
             <div id="form-apply" class="auth-form">
                 <div class="protocol-box">

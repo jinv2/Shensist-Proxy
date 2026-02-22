@@ -1,0 +1,30 @@
+{
+  "protocol": "Shensist_Web4_Intent",
+  "version": "1.0.0",
+  "header": {
+    "message_id": "msg_77a8b9c0",
+    "timestamp": "2026-02-22T07:30:00Z",
+    "sender_pubkey": "0xShensist_Master_A_8888",
+    "receiver_pubkey": "0xShensist_Target_B_9999"
+  },
+  "intent_body": {
+    "session_id": "negotiation_project_shanhaijing_01",
+    "action_type": "PROPOSE_OFFER",
+    "domain": "business_negotiation",
+    "core_demand": "必须保障神思庭（Shensist）在项目中的独立署名权，且首付比例不得低于 30%。",
+    "current_offer_data": {
+      "price_cny": 150000,
+      "payment_terms": "30% upfront, 70% upon delivery",
+      "copyright": "joint_ownership_with_attribution"
+    },
+    "strategic_tone": "firm_but_polite_with_metaphors",
+    "multimodal_passthrough": {
+      "has_audio": true,
+      "audio_wss_endpoint": "wss://p2p.shensist.network/stream/live_audio_A",
+      "has_vision": false
+    }
+  },
+  "verification": {
+    "digital_signature": "0x...[由你的本地私钥生成的加密签名，保证身份不可伪造]..."
+  }
+}
