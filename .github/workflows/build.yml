@@ -1,7 +1,7 @@
 name: 🌐 神思庭全球发行版构建流水线
 
 on:
-  workflow_dispatch: # 允许你在 GitHub 网页上手动点击按钮触发打包
+  workflow_dispatch:
 
 jobs:
   build-windows:
