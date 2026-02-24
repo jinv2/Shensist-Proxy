@@ -6,7 +6,7 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjinv2%2FShensist-Proxy)
 [![GitHub Pages](https://img.shields.io/badge/Deploy-GitHub%20Pages-success?logo=github)](#)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](#)
+[![Copyright: All Rights Reserved](https://img.shields.io/badge/Copyright-All%20Rights%20Reserved-red.svg)](#)
 
 ---
 
@@ -69,6 +69,9 @@
 5. **授权出击**：在输入框下达宏观指令，坐镇指挥舱，观察 AI 替你完成唇枪舌剑。
 
 ---
+
+**【神思庭版权所有 ©️ 2026】**
+本系统核心引擎及视觉资产（包括但不限于神思庭图腾、山海经数字分身）均为神思庭 (Shensist) 独家私有财产。**未经书面授权，严禁任何形式的克隆、反编译、二次分发或商业挪用。违者必将面临严厉的法务打击。**
 
 <div align="center">
   <p>© 2026 <b>神思庭 (Shensist)</b> | 天算 AI · 超个体构建者</p>
