@@ -3,9 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>神思智能体 · 智信 (Web4 纯净版)</title>
+    <title>神思庭 · 智信终端</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/jinv2/Shensist-Proxy/main/logo_ts.png">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="神思庭智信">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/jinv2/Shensist-Proxy/main/logo_ts.png">
+
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
+        /* 自动更新 UI 中的 LOGO 图片源 */
+        .logo-img {
+            width: 120px;
+            height: auto;
+            content: url("https://raw.githubusercontent.com/jinv2/Shensist-Proxy/main/logo_ts.png");
+        }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; color: #fff; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; }
         
@@ -84,6 +97,15 @@
         .auth-gate { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items:center; justify-content:center; padding: 20px;}
         .auth-card { background: #111; border: 1px solid #333; padding: 30px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 0 40px rgba(255,26,77,0.2); }
         
+        /* 新的 Gate 样式 */
+        .gate-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items:center; justify-content:center; padding: 20px;}
+        .gate-box { background: #111; border: 1px solid #333; padding: 30px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 0 40px rgba(255,26,77,0.2); }
+        .gate-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #222; }
+        .gate-tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; color: #555; border-bottom: 2px solid transparent; transition: all 0.3s ease; }
+        .gate-tab:hover { color: #ff1a4d; }
+        .gate-box img { transition: transform 0.5s ease; }
+        .gate-box img:hover { transform: scale(1.1) rotate(5deg); }
+        
         .char-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px;}
         .char-modal { background: #111; border: 1px solid #333; border-radius: 12px; padding: 20px; width: 100%; max-width: 600px; }
         .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
@@ -108,19 +130,18 @@
     </style>
 </head>
 <body>
-    <div id="gate" class="auth-gate">
-        <div class="auth-card">
-            <div style="text-align: center; margin-bottom: 25px;">
-                <div style="width:60px; height:60px; margin:0 auto 15px; border-radius:50%; background:#000; display:flex; align-items:center; justify-content:center; border:2px solid #ff1a4d; overflow:hidden;">
-                    <img src="./logo_ts.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='<span style=\\'color:#ff1a4d; font-weight:bold;\\'>TS</span>'">
-                </div>
-                <h2 style="margin: 0; color: #fff;">神思智能体 · <span style="color: #ff1a4d;">智信</span></h2>
-                <div style="font-size: 12px; color: #ff1a4d; margin-top: 8px;">Web4 P2P 浏览器主权节点</div>
+    <div id="gate" class="gate-overlay">
+        <div class="gate-box">
+            <div style="text-align:center; margin-bottom:20px;">
+                <img src="https://raw.githubusercontent.com/jinv2/Shensist-Proxy/main/logo_ts.png" 
+                     alt="神思庭" 
+                     style="width:80px; height:80px; border-radius:10px; box-shadow: 0 0 15px rgba(255,26,77,0.5);">
+                <h2 style="margin-top:10px; color:#fff; letter-spacing:2px;">神思庭 · 智信</h2>
             </div>
-            
-            <div style="display:flex; margin-bottom:20px; border-bottom:1px solid #222;">
-                <div id="tab-apply" onclick="gateTab('apply')" style="flex:1; text-align:center; padding:10px; cursor:pointer; color:#ff1a4d; border-bottom:2px solid #ff1a4d; font-weight:bold;">初始化节点</div>
-                <div id="tab-login" onclick="gateTab('login')" style="flex:1; text-align:center; padding:10px; cursor:pointer; color:#555; border-bottom:2px solid transparent;">旧节点恢复</div>
+
+            <div class="gate-tabs">
+                <div class="gate-tab" id="tab-apply" onclick="gateTab('apply')" style="color:#ff1a4d; border-bottom:2px solid #ff1a4d;">申请智信号</div>
+                <div class="gate-tab" id="tab-login" onclick="gateTab('login')">验证主权印章</div>
             </div>
             
             <div id="form-apply">
@@ -184,6 +205,19 @@
         </div>
 
         <div class="sidebar" id="mobile-sidebar">
+            <div style="padding: 20px; text-align: center; border-bottom: 1px solid #222;">
+                <img src="https://raw.githubusercontent.com/jinv2/Shensist-Proxy/main/logo_ts.png" 
+                     alt="LOGO" 
+                     style="width: 50px; height: 50px; border-radius: 8px; filter: drop-shadow(0 0 5px rgba(255,26,77,0.8));">
+                <div style="font-size: 12px; color: #ff1a4d; margin-top: 8px; font-weight: bold; letter-spacing: 1px;">SHENSIST</div>
+            </div>
+
+            <div class="nav-icons">
+                <div class="nav-icon active" onclick="switchNav(this, 'chat')">意图</div>
+                <div class="nav-icon" onclick="switchNav(this, 'contacts')">寻址</div>
+                <div class="nav-icon" onclick="switchNav(this, 'settings')">算力</div>
+            </div>
+
             <div id="panel-chat">
                 <div style="font-weight:bold; font-size:14px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
                     智信通讯录 <button class="stage-btn" onclick="addFriend()" style="padding:4px 8px; border-color:#ff1a4d; color:#ff1a4d;">+ 寻址</button>
