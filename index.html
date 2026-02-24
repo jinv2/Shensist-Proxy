@@ -337,6 +337,30 @@
     </div>
 
 <script>
+    // 【神思庭·主权基因锁】
+    (function checkSovereignty() {
+        const currentDomain = window.location.hostname;
+        // 允许运行的合法领地 (如果客户是下载 HTML 离线双击运行，域名为空或 localhost，默认放行)
+        const allowed = ['shensist.top', 'jinv2.github.io', 'localhost', '127.0.0.1', '']; 
+        
+        let isLegal = false;
+        for(let i=0; i<allowed.length; i++) {
+            if(currentDomain.includes(allowed[i])) { isLegal = true; break; }
+        }
+        
+        if(!isLegal) {
+            // 触发自毁与警告
+            document.body.innerHTML = `
+                <div style="background:#000; color:#ff1a4d; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:monospace; text-align:center; padding:20px;">
+                    <h1 style="font-size:40px;">🛑 盗火者警报</h1>
+                    <h2>检测到未授权的运行环境！</h2>
+                    <p>该智信终端引擎由【神思庭 Shensist】独家铸造。<br>3秒后将强制跃迁至神思庭官方矩阵...</p>
+                </div>
+            `;
+            setTimeout(() => { window.location.href = 'https://shensist.top'; }, 3000);
+        }
+    })();
+
     // ==========================================
     // 1. Web4 纯浏览器主权存储 (替代 Python 后端)
     // ==========================================
