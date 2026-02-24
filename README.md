@@ -1,43 +1,50 @@
-# 🛡️ 神思庭·形意 (Shensist Proxy) 
-**Web4 去中心化智能体主权终端 V2026.5**
+```markdown
+# 🛡️ 神思庭·智信 (Shensist Proxy) 
 
-![Version](https://img.shields.io/badge/Version-2026.5-00ffcc?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.8+-blue?style=for-the-badge)
-![License](https://img.shields.io/badge/License-Shensist%20Protocol-ff3366?style=for-the-badge)
-
-## 🌌 协议宣言：一切皆为协议，一切皆为路由
+**Web4 去中心化智能体主权终端 V2026 Ultimate (纯血前端版)**
+  
+🌌 **协议宣言：一切皆为协议，一切皆为路由**
 
 在传统的 Web2/Web3 架构中，用户必须依赖中心化平台或背负沉重的本地算力包袱。《神思庭·形意》协议打破了这一桎梏，其核心理念浓缩为十二个字：**本地零运算，云端零存储，自由进出。**
 
-本终端基于《山海经》数字哲学重构，剥离了所有冗余的“中心化软件脂肪”。你下载的不仅仅是一个 Python 脚本，而是一个能赋予你绝对“数字主权”的 Web4 通信节点。
-
-## 💎 核心主权特性
-
-- ⚡ **本地物理密钥生成**：拒绝手机号/邮箱注册。纯本地算法生成全网唯一的 `智信号 (ID)` 与 `主权私钥`，神思庭官方亦无法窥探。
-- 🧠 **全算力兼容矩阵**：内置 2026 全明星大模型路由（DeepSeek-R1 / OpenAI o1 / Claude 3.5 / Gemini 1.5 Pro），支持随时注入自定义模型 API。
-- 🎙️ **多模态数字皮囊 (Talking Flesh)**：防静音拦截的底层 TTS 引擎，结合 2D 视觉状态机（IDLE/TALKING 毫秒级切换），实现真正的沉浸式拟人博弈。
-- 🔒 **人类意志绝对注入**：彻底的“黑盒博弈”。你填入的“行动纲领与底线”仅在请求大模型的瞬间随发随毁，绝不留在任何云端。
-- 🖤 **Sora级暗黑美学**：全屏极简黑白高对比 UI，像素级还原顶级科技实验室监控舱。
-
-## 🚀 极速部署指南 (单兵作战)
-
-无需复杂的依赖环境，无需配置数据库，真正的“开箱即用”。
-
-### 1. 克隆主权节点
-git clone https://github.com/jinv2/Shensist-Proxy.git
-cd Shensist-Proxy
-
-### 2. 点火运行
-确保你的 Ubuntu/Mac/Windows 已安装 Python 3：
-python3 shensist_auto_zhixin.py
-
-### 3. 接入形意网络
-打开浏览器，访问你的本地安全网关： http://localhost:8080
-*在界面中点击【申请智信号】，在本地沙盒中生成你的专属主权密钥对，即可开启 Web4 征程。*
+本次 Ultimate 终极更新，我们彻底剥离了 Python 后端！本终端现已进化为 **100% 纯静态单文件应用 (SPA)**。你打开的不仅仅是一个网页，而是一个基于 WebRTC 穿透技术、能赋予你绝对“数字主权”的 Web4 P2P 通信节点。
 
 ---
 
-© 2026 **神思庭 (Shensist)** | 超个体构建者
-> *“为特定的场景注入 AI 的灵魂。每一件肢体产品，都是为了让你的直觉在数字世界横行无阻。”*
-> 
-> 🌐 官方协议授权：[shensist.top](https://shensist.top/)
+## 💎 核心主权特性
+
+* ⚡ **零服务器与跨网穿透 (WebRTC P2P)**：摒弃传统 UDP 局域网限制，基于底层 DataChannel 实现全球公网的端到端加密握手。真正的去中心化，数据绝不经过任何官方服务器。
+* 🧠 **纯前端算力直调 (Direct API Routing)**：内置 2026 全明星大模型路由（DeepSeek-V3 / Gemini 3.1 Pro 等）。浏览器直接与大模型发生物理级请求，API Key 仅加密存放于本地 `LocalStorage`，极度纯净。
+* 💾 **物理印章凭证 (.shensist)**：拒绝手机号/邮箱注册。纯前端数学算法生成全网唯一的智信号 (ZX-ID)。支持一键导出/导入 `.shensist` 核心印章，无惧设备更换，身份永不丢失。
+* 🎭 **《山海经》数字皮囊**：内置重黎、青黛、马龙等神话级数字分身，视觉与博弈完美融合。
+* 🔒 **人类意志绝对注入**：彻底的“黑盒博弈”。你填入的“行动纲领与底线”仅在请求大模型的瞬间随发随毁，化作极具压迫感的战术暗盒。
+
+---
+
+## 🚀 极速部署与出击指南
+
+无需安装 Python，无需配置环境，真正的“双击即用”与“全端自适应”。
+
+### 方式一：云端主权直连 (推荐)
+直接访问本仓库的 GitHub Pages 链接，在手机或电脑浏览器中随时随地唤醒你的数字分身：
+👉 **[点击进入神思庭·智信终端](https://jinv2.github.io/Shensist-Proxy/)** *(注：需在仓库 Settings 中开启 Pages 功能)*
+
+### 方式二：物理离线降临
+1. 克隆或下载本仓库到你的电脑：
+   ```bash
+   git clone [https://github.com/jinv2/Shensist-Proxy.git](https://github.com/jinv2/Shensist-Proxy.git)
+
+```
+
+2. 直接用任何现代浏览器（Brave / Chrome / Edge）双击打开目录下的 `index.html`。
+3. 点击【⚡ 锻造本地专属印章并登入】，即可开启 Web4 商战征程。
+
+---
+
+© 2026 **神思庭 (Shensist)** | Web4 数字主权引擎支持 (M2M Protocol)
+
+> “为特定的场景注入 AI 的灵魂。每一件肢体产品，都是为了让你的直觉在数字世界横行无阻。”
+
+🌐 官方协议授权：[shensist.top](https://www.google.com/search?q=https://shensist.top)
+
+```
