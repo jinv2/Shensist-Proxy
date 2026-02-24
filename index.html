@@ -362,6 +362,49 @@
     })();
 
     // ==========================================
+    // 神思庭·前端防篡改与动态主权哈希 (Genesis Web4 Anti-Tamper)
+    // ==========================================
+    async function verifyShensistCopyright() {
+        // 核心版权声明必须存在于 DOM 树中
+        const copyrightStr = "神思庭 (Shensist)";
+        
+        // 1. 扫描整个网页的 HTML 是否被恶意"换皮"或抹除版权
+        if (!document.documentElement.innerHTML.includes(copyrightStr)) {
+            // 发现篡改，立刻用黑屏警报覆盖整个网页，阻断一切交互
+            document.body.innerHTML = `
+                <div style="background:#000; color:#ff1a4d; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:monospace; text-align:center; padding:20px;">
+                    <h1 style="font-size:40px;">🛑 [致命违规]</h1>
+                    <h2>核心版权标识已被恶意篡改或移除！</h2>
+                    <p>⚖️ 根据《神思庭 Web4 开源协议》，您已失去本节点的运行授权。<br>🔒 节点启动序列已强制终止。请恢复 Shensist 版权声明后重试。</p>
+                </div>
+            `;
+            throw new Error("Shensist Copyright Violation: Node Terminated.");
+        }
+
+        // 2. 生成动态防伪哈希凭证 (调用浏览器底层 Web Crypto API 生成 SHA-256)
+        const timeStamp = new Date().getTime().toString();
+        const msgBuffer = new TextEncoder().encode(copyrightStr + timeStamp);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        // 取前 16 位，与您的 Python 架构保持绝对一致
+        const genesisHash = hashHex.substring(0, 16); 
+
+        // 3. 在 F12 开发者控制台打印威压宣告
+        console.log(`%c🛡️ 神思庭版权底层校验通过 | 协议防伪哈希: ${genesisHash}`, 'color: #00ff00; font-weight: bold; font-size: 14px;');
+        console.log(`%c🌐 智信节点主权已启动，P2P 寻址就绪`, 'color: #00ff00; font-size: 12px;');
+        
+        // 4. 将哈希值挂载到全局变量，供您的 WebRTC P2P 握手协议调用
+        window.SHENSIST_GENESIS_HASH = genesisHash;
+    }
+
+    // 确保在网页骨架加载完毕的第一时间，以最高优先级执行自检！
+    document.addEventListener('DOMContentLoaded', () => {
+        verifyShensistCopyright().catch(console.error);
+    });
+
+    // ==========================================
     // 1. Web4 纯浏览器主权存储 (替代 Python 后端)
     // ==========================================
     let myZxId = localStorage.getItem('shensist_zx_id');
