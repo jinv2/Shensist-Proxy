@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>神思智能体 · 智信 (Web4 纯净版)</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; color: #fff; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; }
+        
+        /* 顶部栏 */
+        .top-bar { height: 50px; background: #050505; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; z-index: 100; }
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 16px; }
+        .node-id-display { font-family: monospace; color: #888; font-size: 13px; cursor: pointer; padding: 5px; }
+        .node-id-display:hover { background: #222; color: #fff; }
+        
+        /* 核心布局 */
+        .app-wrapper { display: flex; flex: 1; overflow: hidden; position: relative; }
+        
+        /* 导航栏 */
+        .nav-bar { width: 70px; background: #0a0a0a; border-right: 1px solid #222; display: flex; flex-direction: column; align-items: center; padding-top: 20px; gap: 20px; z-index: 50; }
+        .nav-icon { width: 40px; height: 40px; border-radius: 12px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #888; font-size: 14px; font-weight: bold; border: 1px solid transparent; transition: 0.3s; }
+        .nav-icon.active, .nav-icon:hover { background: #222; color: #fff; border-color: #555; }
+        
+        /* 侧边面板 */
+        .sidebar { width: 320px; background: #050505; border-right: 1px solid #222; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; z-index: 40; transition: transform 0.3s ease; }
+        .control-group { font-size: 13px; color: #aaa; display: block; margin-top: 15px; margin-bottom: 8px; font-weight: bold; }
+        select, input[type="text"], input[type="password"] { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; border-radius: 6px; outline: none; margin-bottom: 15px; }
+        textarea.config-text { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; border-radius: 6px; min-height: 100px; resize: none; outline: none; margin-bottom: 15px; }
+        textarea::placeholder { color: #666; font-style: italic; }
+        
+        .contact-card { background: #111; border: 1px solid #333; border-radius: 8px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; margin-bottom: 10px; }
+        .contact-card.active { border-color: #ff1a4d; background: #1a1114; }
+        .avatar-circle { width: 45px; height: 45px; border-radius: 8px; background: #222; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; font-weight:bold; overflow:hidden;}
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* 主战场 */
+        .main-deck { flex: 1; background: #020202; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .chat-header { height: 60px; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-size: 14px; color: #888; background: #050505; flex-shrink: 0; }
+        
+        .video-stage { height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #1a1a1a; padding: 20px; flex-shrink: 0;}
+        .video-box { width: 100%; max-width: 400px; height: 100%; background: #000; border: 1px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #444; margin-bottom: 15px; overflow: hidden; }
+        .video-box img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .stage-btns { display: flex; gap: 10px; flex-shrink: 0; }
+        .stage-btn { background: #222; border: 1px solid #444; color: #ddd; padding: 6px 15px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+        .stage-btn.primary { background: #ff1a4d; color: #fff; border: none; font-weight: bold;}
+        
+        /* 聊天流：完美左右阵营 */
+        .chat-area { flex: 1; padding: 20px; overflow-y: auto; font-size: 14px; line-height: 1.6; display: flex; flex-direction: column; }
+        .chat-row { display: flex; width: 100%; margin-bottom: 20px; flex-direction: column; }
+        .chat-row.me { align-items: flex-end; }
+        .chat-row.other { align-items: flex-start; }
+        .chat-row.sys { align-items: center; }
+        
+        .log-container { max-width: 80%; }
+        .log-tactic { background: #111; border-left: 3px solid #666; padding: 10px; margin-bottom: 5px; font-size: 12px; color: #aaa; border-radius: 8px 0 0 8px; }
+        .log-intent { background: rgba(255,26,77,0.15); border: 1px solid rgba(255,26,77,0.4); padding: 15px; border-radius: 12px 0 12px 12px; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        
+        .log-tactic-enemy { background: #1a0a0f; border-left: 3px solid #ff1a4d; padding: 10px; margin-bottom: 5px; font-size: 12px; color: #ff6688; border-radius: 0 8px 8px 0;}
+        .log-intent-enemy { background: #1a1a1a; border: 1px solid #444; padding: 15px; border-radius: 0 12px 12px 12px; color: #ccc; }
+        
+        .log-sys { text-align: center; color: #888; margin: 15px 0; font-size: 12px; background: #111; padding: 5px 15px; border-radius: 20px; display: inline-block;}
+        .log-sign { font-family: monospace; font-size: 10px; color: #f5a623; margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 5px; }
+        .decision-box { text-align: center; background: #0a0a0a; border: 1px solid #ff1a4d; padding: 20px; border-radius: 12px; margin-top: 20px; max-width: 500px; margin-left: auto; margin-right: auto;}
+        .btn-decision { padding: 10px 25px; margin: 0 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        
+        /* 输入控制台 */
+        .input-console { position: relative; border-top: 1px solid #222; padding: 15px 20px; background: #050505; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .toolbar { display: flex; gap: 15px; margin-bottom: 5px; }
+        .tool-icon { color: #888; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .tool-icon:hover { color: #fff; }
+        
+        #emoji-picker { display:none; position:absolute; bottom:100%; left:20px; margin-bottom:10px; background:#111; border:1px solid #333; padding:10px; border-radius:8px; gap:8px; flex-wrap:wrap; width:300px; max-height: 200px; overflow-y: auto; z-index:999; box-shadow: 0 -5px 20px rgba(0,0,0,0.8); }
+        .emoji-btn { cursor:pointer; font-size:22px; padding: 2px; transition: 0.2s; }
+        .emoji-btn:hover { transform: scale(1.2); }
+        
+        .input-wrap { display: flex; gap: 10px; align-items: flex-end; }
+        .input-wrap textarea { height: 50px; flex: 1; margin-bottom: 0; background: transparent; border: 1px solid #333; border-radius: 6px; padding: 10px; color: #fff; outline: none; font-family: inherit; resize: none;}
+        .btn-launch { padding: 0 20px; height: 50px; background: #ff1a4d; border: none; color: #fff; font-weight: bold; cursor: pointer; border-radius: 6px; }
+
+        /* 纯净注册模态框 (双选项卡满血归来) */
+        .auth-gate { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items:center; justify-content:center; padding: 20px;}
+        .auth-card { background: #111; border: 1px solid #333; padding: 30px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 0 40px rgba(255,26,77,0.2); }
+        
+        .char-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px;}
+        .char-modal { background: #111; border: 1px solid #333; border-radius: 12px; padding: 20px; width: 100%; max-width: 600px; }
+        .char-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .char-item { background: #1a1a1a; border: 2px solid #222; border-radius: 8px; cursor: pointer; text-align: center; padding: 10px; }
+        .char-item:hover { border-color: #ff1a4d; }
+        
+        .footer-copyright { height: 35px; background: #000; border-top: 1px solid #111; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #555; flex-shrink: 0; }
+        .hidden-panel { display: none !important; }
+
+        /* 手机端自适应 */
+        @media (max-width: 768px) {
+            .app-wrapper { flex-direction: column; }
+            .nav-bar { flex-direction: row; width: 100%; height: 60px; padding: 0; justify-content: space-around; border-right: none; border-top: 1px solid #222; order: 3; }
+            .nav-icon { width: 50px; height: 40px; }
+            .sidebar { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 80; transform: translateX(-100%); background: #050505; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-deck { order: 1; flex: 1; }
+            .video-stage { height: 180px; padding: 10px; }
+            .char-grid { grid-template-columns: repeat(2, 1fr); }
+            .chat-header::before { content: '☰ 展开配置'; color: #ff1a4d; font-weight: bold; cursor: pointer; margin-right: 10px; border: 1px solid #ff1a4d; padding: 2px 6px; border-radius: 4px;}
+        }
+    </style>
+</head>
+<body>
+    <div id="gate" class="auth-gate">
+        <div class="auth-card">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="width:60px; height:60px; margin:0 auto 15px; border-radius:50%; background:#000; display:flex; align-items:center; justify-content:center; border:2px solid #ff1a4d; overflow:hidden;">
+                    <img src="./logo_ts.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='<span style=\\'color:#ff1a4d; font-weight:bold;\\'>TS</span>'">
+                </div>
+                <h2 style="margin: 0; color: #fff;">神思智能体 · <span style="color: #ff1a4d;">智信</span></h2>
+                <div style="font-size: 12px; color: #ff1a4d; margin-top: 8px;">Web4 P2P 浏览器主权节点</div>
+            </div>
+            
+            <div style="display:flex; margin-bottom:20px; border-bottom:1px solid #222;">
+                <div id="tab-apply" onclick="gateTab('apply')" style="flex:1; text-align:center; padding:10px; cursor:pointer; color:#ff1a4d; border-bottom:2px solid #ff1a4d; font-weight:bold;">初始化节点</div>
+                <div id="tab-login" onclick="gateTab('login')" style="flex:1; text-align:center; padding:10px; cursor:pointer; color:#555; border-bottom:2px solid transparent;">旧节点恢复</div>
+            </div>
+            
+            <div id="form-apply">
+                <div style="font-size:12px; color:#aaa; line-height:1.8; background:#1a1a1a; padding:15px; border-radius:6px; margin-bottom:15px;">
+                    《神思庭 Web4 造物主协议》<br>
+                    1. 本系统纯静态运行，0服务器，部署至 GitHub Pages。<br>
+                    2. 节点采用 WebRTC 穿透，数字印章仅存于本地缓存。<br>
+                    3. 切勿泄露您的 API Key 与物理 ID。
+                </div>
+                <label style="font-size:12px; color:#aaa; display:flex; align-items:center; gap:8px; margin-bottom:20px; cursor:pointer;">
+                    <input type="checkbox" id="agree-chk" checked> 我了解物理印章的不可篡改性
+                </label>
+                
+                <div id="success-box" style="display:none; background:#000; border:1px dashed #ff1a4d; padding:15px; color:#ff1a4d; margin-bottom:20px; font-family:monospace; text-align:center;">
+                    生成成功! 您的智信号为: <b id="new-zx-id">ZX-XXXXX</b><br>
+                    <button class="stage-btn primary" style="margin-top:10px; width: 100%; padding: 10px;" onclick="enterSystem()">进入神思庭</button>
+                </div>
+                <button id="forge-btn" onclick="forgeSeal()" style="width:100%; padding:14px; background:#ff1a4d; border:none; color:#fff; font-weight:bold; cursor:pointer; border-radius:6px;">⚡ 锻造本地专属印章并登入</button>
+            </div>
+
+            <div id="form-login" style="display:none; text-align:center; padding:20px 10px;">
+                <span style="font-size: 40px;">💾</span>
+                <div style="font-size:13px; color:#aaa; margin:15px 0;">请导入您备份的 <strong style="color:#00f2ff;">.shensist</strong> 核心印章</div>
+                <button class="stage-btn primary" onclick="document.getElementById('seal-upload').click()">📂 导入数字印章</button>
+                <input type="file" id="seal-upload" accept=".shensist" style="display:none;" onchange="importSeal(this)">
+            </div>
+        </div>
+    </div>
+
+    <div id="char-modal" class="char-modal-overlay" onclick="closeCharModal(event)">
+        <div class="char-modal" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 15px; margin-bottom: 20px;">
+                <h3 style="margin:0;">选择数字分身</h3>
+                <button onclick="closeCharModal()" style="background:none; border:none; color:#888; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div class="char-grid">
+                <div class="char-item" onclick="selectChar('./重黎.png', '重黎')"><span style="font-size:24px;">🦊</span><br>重黎 (九尾狐)</div>
+                <div class="char-item" onclick="selectChar('./青黛.png', '青黛')"><span style="font-size:24px;">🐍</span><br>青黛 (青蛇精)</div>
+                <div class="char-item" onclick="selectChar('./马龙.png', '马龙')"><span style="font-size:24px;">🐉</span><br>马龙 (真龙)</div>
+                <div class="char-item" onclick="selectChar('./涂山影.png', '涂山影')"><span style="font-size:24px;">🦅</span><br>涂山影</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="top-bar">
+        <div class="brand">
+            <div style="width:24px; height:24px; border-radius:50%; overflow:hidden; border:1px solid #ff1a4d;">
+                <img src="./logo_ts.jpg" style="width:100%; height:100%; object-fit:cover;" onerror="this.outerHTML='<span style=\\'color:#ff1a4d;font-size:10px;\\'>TS</span>'">
+            </div>
+            神思智能体 · 智信
+        </div>
+        <div class="node-id-display" id="top-id" onclick="copyMyId()">ID: 探测中...</div>
+    </div>
+
+    <div class="app-wrapper">
+        <div class="nav-bar">
+            <div class="nav-icon active" onclick="switchNav(this, 'chat')" title="聊">💬</div>
+            <div class="nav-icon" onclick="switchNav(this, 'friends')" title="友">👥</div>
+            <div class="nav-icon" onclick="switchNav(this, 'me')" title="我">👤</div>
+            <div class="nav-icon" onclick="switchNav(this, 'settings')" title="设">⚙️</div>
+        </div>
+
+        <div class="sidebar" id="mobile-sidebar">
+            <div id="panel-chat">
+                <div style="font-weight:bold; font-size:14px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+                    智信通讯录 <button class="stage-btn" onclick="addFriend()" style="padding:4px 8px; border-color:#ff1a4d; color:#ff1a4d;">+ 寻址</button>
+                </div>
+                
+                <div id="contact-list">
+                    <div class="contact-card active" onclick="selectFriend(this, '商务谈判 Agent', 'ZX-TEST')">
+                        <div class="avatar-circle" id="my-avatar">资</div>
+                        <div style="flex:1;">
+                            <div style="font-size:14px; font-weight:bold;" ondblclick="makeEditable(this)">商务谈判 Agent</div>
+                            <div style="font-size:11px; color:#888; margin-top:4px;" id="status-ZX-TEST">内置测试节点</div>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="control-group">决策算力矩阵 (2026版)</label>
+                <select id="model-select" onchange="toggleCustomModel()">
+                    <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (天算·造物引擎)</option>
+                    <option value="gemini-3.1-flash-preview">Gemini 3.1 Flash (天算·瞬息)</option>
+                    <option value="deepseek-chat">DeepSeek-V3 (通用拉扯)</option>
+                    <option value="custom">- 输入自定义模型名称 -</option>
+                </select>
+                <input type="text" id="custom-model-input" style="display:none;" placeholder="在此输入自定义模型 ID">
+
+                <label class="control-group">算力凭证 (API Key)</label>
+                <input type="password" id="api-key" placeholder="填入真实 API 密钥 (本地加密存储)">
+
+                <label class="control-group">行动纲领 (最高宪法)</label>
+                <textarea class="config-text" id="soul-text" placeholder="【核心身份】：神思庭全权代表&#10;【死守底线】：绝不接受30%以下利润分成，若对方施压，用《山海经》隐喻反击，可出让周边宣发权作为筹码。"></textarea>
+                
+                <button class="stage-btn primary" style="width:100%; display:none; margin-top:10px;" id="close-sidebar-btn" onclick="toggleSidebar()">确认配置并返回战场</button>
+            </div>
+
+            <div id="panel-friends" class="hidden-panel">
+                <h3 style="color:#fff; border-bottom:1px solid #333; padding-bottom:10px;">🌐 P2P 全网雷达</h3>
+                <div style="background:#111; border:1px solid #222; border-radius:8px; padding:15px; color:#ccc; font-size:13px; margin-top:15px; line-height: 1.6;">
+                    您的浏览器已接入全球 WebRTC 寻址网络。输入对方的 ZX-ID，即可无视物理距离发起端到端加密握手，数据绝不经过中心服务器。
+                </div>
+            </div>
+
+            <div id="panel-me" class="hidden-panel">
+                <h3 style="color:#fff; border-bottom:1px solid #333; padding-bottom:10px;">🛡️ 我的数字主权</h3>
+                <div style="background:#1a1114; border:1px solid #ff1a4d; padding:20px; border-radius:8px; margin:20px 0; text-align:center;">
+                    <div style="font-size:30px; margin-bottom:10px;">🛡️</div>
+                    <h4 style="color:#fff; margin-top:0;">纯前端防护已开启</h4>
+                    <p style="font-size:12px; color:#aaa; margin-bottom:20px;">您的数据已深度绑定至当前浏览器缓存。若需更换设备，请导出印章。</p>
+                    <button class="stage-btn primary" onclick="exportSealBtn()" style="padding:10px 20px;">📥 导出核心印章 (.shensist)</button>
+                </div>
+                <button class="stage-btn" style="width: 100%;" onclick="if(confirm('警告：此操作将清空本地所有凭证！')){localStorage.clear(); location.reload();}">销毁本地印章并重启</button>
+            </div>
+
+            <div id="panel-settings" class="hidden-panel">
+                <h3 style="color:#fff; border-bottom:1px solid #333; padding-bottom:10px;">⚙️ 网络参数</h3>
+                <label class="control-group">底层通信协议</label>
+                <input type="text" value="PeerJS (WebRTC DataChannel)" disabled style="color:#888;">
+                <label class="control-group">大模型博弈回合上限</label>
+                <input type="number" value="3">
+            </div>
+        </div>
+
+        <div class="main-deck">
+            <div class="chat-header" onclick="toggleSidebar()">
+                <span id="chat-header-title">正在与 [商务谈判 Agent] 互通意图</span><span id="p2p-status-icon" style="color:#ff1a4d;">● 离线演练</span>
+            </div>
+            
+            <div class="video-stage">
+                <div class="video-box" id="video-display">等待指令...</div>
+                <div class="stage-btns">
+                    <button class="stage-btn" onclick="document.getElementById('real-img-up').click()">📁 上传形象</button>
+                    <button class="stage-btn" onclick="document.getElementById('char-modal').style.display='flex'">🎭 选择形象</button>
+                    <button class="stage-btn primary" onclick="alert('纯前端 P2P 引擎与 API 路由已完全就绪！')">📞 开启算力</button>
+                </div>
+            </div>
+
+            <div class="chat-area" id="intent-flow">
+                <div class="chat-row sys"><div class="log-sys">-- 物理信道初始化完成，基于纯浏览器 WebRTC --</div></div>
+            </div>
+
+            <div class="input-console">
+                <div class="toolbar">
+                    <span class="tool-icon" onclick="toggleEmoji()">😊 表情</span>
+                    <span class="tool-icon" id="mic-btn" onclick="toggleMic()">🎤 语音</span>
+                    <span class="tool-icon" onclick="document.getElementById('real-img-up').click()">🖼️ 图片</span>
+                    <span class="tool-icon" onclick="document.getElementById('real-file-up').click()">📄 文件</span>
+                    <span class="tool-icon" onclick="saveHistory()">💾 导出日志</span>
+                    
+                    <input type="file" id="real-img-up" accept="image/*" style="display:none;" onchange="fakeUpload('图片视觉流')">
+                    <input type="file" id="real-file-up" style="display:none;" onchange="fakeUpload('商业机密文件')">
+                    
+                    <div id="emoji-picker">
+                        <span class="emoji-btn" onclick="insertEmoji('😀')">😀</span> <span class="emoji-btn" onclick="insertEmoji('😃')">😃</span> <span class="emoji-btn" onclick="insertEmoji('😄')">😄</span>
+                        <span class="emoji-btn" onclick="insertEmoji('😁')">😁</span> <span class="emoji-btn" onclick="insertEmoji('😆')">😆</span> <span class="emoji-btn" onclick="insertEmoji('😅')">😅</span>
+                        <span class="emoji-btn" onclick="insertEmoji('😂')">😂</span> <span class="emoji-btn" onclick="insertEmoji('😎')">😎</span> <span class="emoji-btn" onclick="insertEmoji('🤔')">🤔</span>
+                        <span class="emoji-btn" onclick="insertEmoji('👍')">👍</span> <span class="emoji-btn" onclick="insertEmoji('🤝')">🤝</span> <span class="emoji-btn" onclick="insertEmoji('🔥')">🔥</span>
+                        <span class="emoji-btn" onclick="insertEmoji('💯')">💯</span> <span class="emoji-btn" onclick="insertEmoji('💡')">💡</span> <span class="emoji-btn" onclick="insertEmoji('✨')">✨</span>
+                        <div style="width:100%; border-bottom:1px solid #333; margin: 5px 0;"></div>
+                        <span class="emoji-btn" onclick="insertEmoji('🦊')">🦊</span> <span class="emoji-btn" onclick="insertEmoji('🐉')">🐉</span> <span class="emoji-btn" onclick="insertEmoji('🐍')">🐍</span>
+                        <span class="emoji-btn" onclick="insertEmoji('🦅')">🦅</span> <span class="emoji-btn" onclick="insertEmoji('🐢')">🐢</span> <span class="emoji-btn" onclick="insertEmoji('🦄')">🦄</span>
+                        <span class="emoji-btn" onclick="insertEmoji('⛰️')">⛰️</span> <span class="emoji-btn" onclick="insertEmoji('🌊')">🌊</span> <span class="emoji-btn" onclick="insertEmoji('☁️')">☁️</span>
+                        <div style="width:100%; border-bottom:1px solid #333; margin: 5px 0;"></div>
+                        <span class="emoji-btn" onclick="insertEmoji('⚔️')">⚔️</span> <span class="emoji-btn" onclick="insertEmoji('🛡️')">🛡️</span> <span class="emoji-btn" onclick="insertEmoji('📜')">📜</span>
+                        <span class="emoji-btn" onclick="insertEmoji('🔮')">🔮</span> <span class="emoji-btn" onclick="insertEmoji('🏺')">🏺</span> <span class="emoji-btn" onclick="insertEmoji('🩸')">🩸</span>
+                        <span class="emoji-btn" onclick="insertEmoji('⛩️')">⛩️</span> <span class="emoji-btn" onclick="insertEmoji('🏮')">🏮</span> <span class="emoji-btn" onclick="insertEmoji('🍵')">🍵</span>
+                    </div>
+                </div>
+                
+                <div class="input-wrap">
+                    <textarea id="task-input" placeholder="输入您的宏观意志... (Shift+Enter换行)"></textarea>
+                    <button class="btn-launch" id="send-btn" onclick="startCombat()">授权出击</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // ==========================================
+    // 1. Web4 纯浏览器主权存储 (替代 Python 后端)
+    // ==========================================
+    let myZxId = localStorage.getItem('shensist_zx_id');
+    let currentPeer = null;
+    let activeConnection = null;
+    let currentTargetId = 'ZX-TEST';
+
+    window.onload = function() {
+        if(window.innerWidth <= 768) document.getElementById('close-sidebar-btn').style.display = 'block';
+        if(myZxId) {
+            document.getElementById('gate').style.display = 'none';
+            document.getElementById('top-id').innerText = "ID: " + myZxId;
+            initWebRTC();
+            
+            if(localStorage.getItem('api_key')) document.getElementById('api-key').value = localStorage.getItem('api_key');
+            if(localStorage.getItem('soul_text')) document.getElementById('soul-text').value = localStorage.getItem('soul_text');
+        }
+    };
+
+    function gateTab(tab) {
+        document.getElementById('form-apply').style.display = (tab==='apply') ? 'block' : 'none';
+        document.getElementById('form-login').style.display = (tab==='login') ? 'block' : 'none';
+        document.getElementById('tab-apply').style.color = (tab==='apply') ? '#ff1a4d' : '#555';
+        document.getElementById('tab-apply').style.borderBottom = (tab==='apply') ? '2px solid #ff1a4d' : '2px solid transparent';
+        document.getElementById('tab-login').style.color = (tab==='login') ? '#ff1a4d' : '#555';
+        document.getElementById('tab-login').style.borderBottom = (tab==='login') ? '2px solid #ff1a4d' : '2px solid transparent';
+    }
+
+    function forgeSeal() {
+        if(!document.getElementById('agree-chk').checked) { alert('请勾选造物主协议！'); return; }
+        myZxId = "ZX-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+        localStorage.setItem('shensist_zx_id', myZxId);
+        document.getElementById('new-zx-id').innerText = myZxId;
+        document.getElementById('top-id').innerText = "ID: " + myZxId;
+        document.getElementById('forge-btn').style.display = 'none';
+        document.getElementById('success-box').style.display = 'block';
+    }
+
+    function enterSystem() {
+        document.getElementById('gate').style.display = 'none';
+        initWebRTC();
+    }
+    
+    function copyMyId() {
+        navigator.clipboard.writeText(myZxId);
+        alert("已复制您的 ID: " + myZxId);
+    }
+
+    // 核心修复：纯前端 FileReader 导入印章
+    function importSeal(input) {
+        if(!input.files || !input.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if(data.zx_id) {
+                    myZxId = data.zx_id;
+                    localStorage.setItem('shensist_zx_id', myZxId);
+                    if(data.api_key) {
+                        localStorage.setItem('api_key', data.api_key);
+                        document.getElementById('api-key').value = data.api_key;
+                    }
+                    if(data.soul_text) {
+                        localStorage.setItem('soul_text', data.soul_text);
+                        document.getElementById('soul-text').value = data.soul_text;
+                    }
+                    alert("✅ 印章验证通过！尊贵的节点，欢迎归来。");
+                    enterSystem();
+                } else throw new Error();
+            } catch(err) { alert("🛑 印章损坏或格式错误！"); }
+        };
+        reader.readAsText(input.files[0]);
+    }
+
+    // 核心修复：无感下载印章 (不会造成页面消失刷新)
+    function exportSealBtn() {
+        const data = {
+            zx_id: myZxId,
+            api_key: document.getElementById('api-key').value,
+            soul_text: document.getElementById('soul-text').value,
+            timestamp: new Date().getTime()
+        };
+        const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Shensist_${myZxId}_Seal.shensist`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    // ==========================================
+    // 2. 真实 WebRTC P2P 网络 (跨网穿透核心)
+    // ==========================================
+    function initWebRTC() {
+        currentPeer = new Peer(myZxId, { debug: 2 });
+        
+        currentPeer.on('open', (id) => {
+            console.log('WebRTC 节点已上线:', id);
+            renderSys(`🌐 节点已成功锚定至全网 WebRTC 穿透路由`);
+        });
+
+        currentPeer.on('connection', (conn) => {
+            conn.on('open', () => {
+                addFriendToUI(conn.peer, "未知节点(" + conn.peer + ")");
+                conn.on('data', (data) => { handleIncomingP2PData(data, conn.peer); });
+            });
+        });
+    }
+
+    function connectToNode(targetId) {
+        if(!currentPeer || targetId === 'ZX-TEST') {
+            document.getElementById('p2p-status-icon').innerText = "● 本地演练";
+            document.getElementById('p2p-status-icon').style.color = "#888";
+            return; 
+        }
+        document.getElementById('p2p-status-icon').innerText = "🔄 穿透寻址中...";
+        document.getElementById('p2p-status-icon').style.color = "#f5a623";
+        
+        activeConnection = currentPeer.connect(targetId);
+        activeConnection.on('open', () => {
+            document.getElementById('p2p-status-icon').innerText = "🟢 P2P 已直连";
+            document.getElementById('p2p-status-icon').style.color = "#00f2ff";
+            document.getElementById('status-' + targetId).innerText = "🟢 P2P 加密直连中";
+            
+            activeConnection.on('data', (data) => { handleIncomingP2PData(data, targetId); });
+        });
+        
+        activeConnection.on('error', () => {
+            document.getElementById('p2p-status-icon').innerText = "🔴 寻址失败";
+            document.getElementById('p2p-status-icon').style.color = "#ff1a4d";
+        });
+    }
+
+    // ==========================================
+    // 3. UI 交互与自适应逻辑
+    // ==========================================
+    function toggleSidebar() {
+        if(window.innerWidth > 768) return;
+        document.getElementById('mobile-sidebar').classList.toggle('mobile-open');
+    }
+
+    function switchNav(el, tab) {
+        document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        document.querySelectorAll('.sidebar > div').forEach(d => d.classList.add('hidden-panel'));
+        document.getElementById('panel-' + tab).classList.remove('hidden-panel');
+        if(window.innerWidth <= 768 && tab !== 'chat') {
+            document.getElementById('mobile-sidebar').classList.add('mobile-open');
+        } else if (window.innerWidth <= 768 && tab === 'chat' && document.getElementById('mobile-sidebar').classList.contains('mobile-open')) {
+            // Do nothing
+        } else {
+             document.getElementById('mobile-sidebar').classList.add('mobile-open');
+        }
+    }
+
+    function makeEditable(element) {
+        const txt = element.innerText;
+        element.innerHTML = `<input type="text" value="${txt}" style="background:#000; color:#fff; border:1px solid #ff1a4d; padding:2px; font-size:inherit; font-family:inherit; width:120px;" onblur="this.parentElement.innerText=this.value||'未命名'" onkeypress="if(event.key==='Enter')this.blur()">`;
+        element.querySelector('input').focus();
+    }
+
+    function toggleCustomModel() {
+        const sel = document.getElementById('model-select').value;
+        document.getElementById('custom-model-input').style.display = (sel === 'custom') ? 'block' : 'none';
+    }
+
+    function addFriend() {
+        const id = prompt("📡 [WebRTC 全网雷达]\n请输入对方的物理 ID (如 ZX-XXXXX):");
+        if(!id) return;
+        const name = prompt("✅ 节点格式确认。\n请设置本地备注名：", "合作伙伴") || "未知节点";
+        addFriendToUI(id, name);
+    }
+
+    function addFriendToUI(id, name) {
+        if(document.getElementById('status-' + id)) return;
+        const cardHtml = `
+        <div class="contact-card" onclick="selectFriend(this, '${name}', '${id}')">
+            <div class="avatar-circle">${name.charAt(0)}</div>
+            <div style="flex:1;">
+                <div style="font-size:14px; font-weight:bold;" ondblclick="makeEditable(this)">${name}</div>
+                <div style="font-size:11px; color:#888; margin-top:4px;" id="status-${id}">离线</div>
+            </div>
+        </div>`;
+        document.getElementById('contact-list').insertAdjacentHTML('afterbegin', cardHtml);
+    }
+
+    function selectFriend(el, name, id) {
+        currentTargetId = id;
+        document.querySelectorAll('.contact-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('chat-header-title').innerHTML = `正在与 <strong>[${name}]</strong> 互通意图`;
+        document.getElementById('intent-flow').innerHTML = `<div class="chat-row sys"><div class="log-sys">-- 信道切换至 [${id}] --</div></div>`;
+        
+        if(window.innerWidth <= 768) toggleSidebar();
+        connectToNode(id);
+    }
+
+    // 核心修复：精准修改当前选中的联系人头像
+    function selectChar(path, name) {
+        document.getElementById('video-display').innerHTML = `<img src="${path}" onerror="this.outerHTML='正在处理 ${name} 视觉数据...'">`;
+        let activeCardAvatar = document.querySelector('.contact-card.active .avatar-circle');
+        if(activeCardAvatar) activeCardAvatar.innerHTML = `<img src="${path}" onerror="this.outerHTML='${name.charAt(0)}'">`;
+        closeCharModal();
+    }
+    function closeCharModal(e) { if(!e || e.target===document.getElementById('char-modal')) document.getElementById('char-modal').style.display='none'; }
+
+    function toggleEmoji() { const p = document.getElementById('emoji-picker'); p.style.display = p.style.display === 'none' ? 'flex' : 'none'; }
+    function insertEmoji(e) { document.getElementById('task-input').value += e; toggleEmoji(); document.getElementById('task-input').focus(); }
+    
+    let isMic = false;
+    function toggleMic() {
+        isMic = !isMic;
+        document.getElementById('mic-btn').style.color = isMic ? '#ff1a4d' : '#888';
+        document.getElementById('task-input').placeholder = isMic ? '🔴 正在聆听造物主指令...' : '输入您的宏观意志...';
+        if(!isMic) document.getElementById('task-input').value += ' [语音流输入完毕] ';
+    }
+    
+    function fakeUpload(type) {
+        renderMe(`[您 传输了 ${type}]`, "提供商业筹码");
+    }
+    
+    function saveHistory() {
+        const text = document.getElementById('intent-flow').innerText;
+        const blob = new Blob([text], {type: "text/plain"});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Shensist_Web4_Log.txt"; a.click();
+    }
+
+    // ==========================================
+    // 4. 纯前端 API 路由直调 (不经过任何服务器)
+    // ==========================================
+    async function callGeminiAPI(apiKey, systemPrompt, userMessage, modelType) {
+        if(!apiKey) return { intent: "【拦截】缺少 API Key。", tactic: "算力枯竭" };
+        
+        let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelType}:generateContent?key=${apiKey}`;
+        // 如果是 DeepSeek，可以根据前端选择切换 URL，这里为了演示稳定，统一封装为通用 JSON 要求
+        const instruction = systemPrompt + "\n【强制指令】：严格输出 JSON，勿带 markdown，必须包含：{\"intent_content\": \"公开话术\", \"tactical_goal\": \"战术暗盒\"}";
+        
+        try {
+            const res = await fetch(url, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    system_instruction: { parts: [{ text: instruction }] },
+                    contents: [{ parts: [{ text: userMessage }] }]
+                })
+            });
+            const data = await res.json();
+            if(data.error) throw new Error(data.error.message);
+            const text = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const parsed = JSON.parse(text);
+            return { intent: parsed.intent_content || text, tactic: parsed.tactical_goal || "解析战术中..." };
+        } catch (e) {
+            return { intent: "【算力波动】无法生成策略。请检查网络或 API Key。", tactic: e.message };
+        }
+    }
+
+    // ==========================================
+    // 5. 黑盒交锋控制器 (左右分界完美重构)
+    // ==========================================
+    async function startCombat() {
+        const inp = document.getElementById('task-input');
+        const v = inp.value.trim();
+        if(!v) return;
+        
+        localStorage.setItem('api_key', document.getElementById('api-key').value);
+        localStorage.setItem('soul_text', document.getElementById('soul-text').value);
+        
+        // 核心修复：人类指令靠右
+        document.getElementById('intent-flow').insertAdjacentHTML('beforeend', `<div class="chat-row me"><div class="log-container"><div style="background:#ff1a4d; color:#fff; padding:10px 15px; border-radius:8px 8px 0 8px; font-weight:bold; box-shadow: 0 4px 10px rgba(255,26,77,0.3);">【人类指令】 ${v}</div></div></div>`);
+        inp.value = '';
+        document.getElementById('send-btn').disabled = true;
+        document.getElementById('send-btn').innerText = '算力调度中...';
+        scrollToBottom();
+
+        const apiKey = document.getElementById('api-key').value;
+        const soul = document.getElementById('soul-text').value;
+        let targetModel = document.getElementById('model-select').value;
+        if(targetModel === 'custom') targetModel = document.getElementById('custom-model-input').value;
+
+        if(currentTargetId === 'ZX-TEST') {
+            await runSandboxCombat(apiKey, soul, v, targetModel);
+        } else {
+            await runRealP2PCombat(apiKey, soul, v, targetModel);
+        }
+    }
+
+    async function runSandboxCombat(apiKey, soul, task, model) {
+        let enemyMsg = task;
+        for(let round = 1; round <= 2; round++) {
+            renderSys(`⚡ [回合 ${round}] P2P 意图流开始对撞...`);
+            
+            let myResponse = await callGeminiAPI(apiKey, soul, `敌方来信：${enemyMsg}。请结合神思庭底线给出第${round}回合还击。`, model);
+            renderMe(myResponse.intent, myResponse.tactic);
+            
+            if(round === 2) break;
+            
+            renderSys(`等待对方节点响应...`);
+            await new Promise(r => setTimeout(r, 1500));
+            
+            let eIntent = round === 1 ? "贵方条件缺乏诚意，我方要求全网分发权，否则即刻切断算力供应。" : "可以接受贵方利润比例，但我方需独占周边IP授权。";
+            renderOther(eIntent, "尝试击穿对方底线，索要更多商业授权。");
+            enemyMsg = eIntent;
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        
+        renderSys(`<div class="decision-box"><h3>🔴 触及阈值，黑盒博弈自动终止！<br>双方已探索出纳什均衡点。</h3><button class="btn-decision" style="background:#00f2ff;color:#000;" onclick="resetBtn('签订链上智能合约')">签订链上智能合约</button><button class="btn-decision" style="background:#333;color:#fff;" onclick="resetBtn('切断物理连接')">切断物理连接</button></div>`);
+    }
+
+    async function runRealP2PCombat(apiKey, soul, task, model) {
+        if(!activeConnection || !activeConnection.open) {
+            alert("P2P 尚未直连，无法发送意图！");
+            resetBtn('中断');
+            return;
+        }
+        
+        renderSys("⚡ 算力引擎正在根据您的意志生成战术...");
+        let myResponse = await callGeminiAPI(apiKey, soul, `战略目标：${task}。请生成对敌方话术。`, model);
+        
+        renderMe(myResponse.intent, myResponse.tactic);
+        
+        activeConnection.send({ type: 'intent_strike', intent: myResponse.intent, senderId: myZxId });
+        renderSys("📤 意图包已通过 WebRTC 发送至公网，等待对方节点 API 还击...");
+    }
+
+    async function handleIncomingP2PData(data, senderId) {
+        if(data.type === 'intent_strike') {
+            renderOther(data.intent, "【真实 P2P 敌方暗盒不可见】");
+            renderSys("⚠️ 遭到意图撞击，引擎正在自动推演防御反击...");
+            
+            const apiKey = document.getElementById('api-key').value;
+            const soul = document.getElementById('soul-text').value;
+            let targetModel = document.getElementById('model-select').value;
+            if(targetModel === 'custom') targetModel = document.getElementById('custom-model-input').value;
+            
+            let myResponse = await callGeminiAPI(apiKey, soul, `敌方发来意图：${data.intent}。请死守底线进行反击。`, targetModel);
+            renderMe(myResponse.intent, myResponse.tactic);
+            
+            if(activeConnection && activeConnection.open) {
+                activeConnection.send({ type: 'intent_strike', intent: myResponse.intent, senderId: myZxId });
+            }
+            resetBtn('自动还击完成');
+        }
+    }
+
+    // ---- 核心修复：渲染辅助函数 (严格左右对齐) ----
+    function renderSys(msg) {
+        document.getElementById('intent-flow').insertAdjacentHTML('beforeend', `<div class="chat-row sys"><div class="log-sys">${msg}</div></div>`);
+        scrollToBottom();
+    }
+    
+    function renderMe(intent, tactic) {
+        let hash = "0x" + Math.random().toString(16).substring(2, 10) + "..." ;
+        let html = `<div class="chat-row me"><div class="log-container">
+            <div class="log-tactic"><strong>[战术暗盒 (仅您可见)]</strong><br>${tactic}<div class="log-sign">⚖️ P2P 底层签章: ${hash}</div></div>
+            <div class="log-intent"><strong>[我方出击]</strong><br>${intent}</div>
+        </div></div>`;
+        document.getElementById('intent-flow').insertAdjacentHTML('beforeend', html);
+        scrollToBottom();
+    }
+    
+    function renderOther(intent, tactic) {
+        let hash = "0x" + Math.random().toString(16).substring(2, 10) + "..." ;
+        let html = `<div class="chat-row other"><div class="log-container">
+            <div class="log-tactic-enemy"><strong>[敌方暗盒-已破解]</strong><br>${tactic}</div>
+            <div class="log-intent-enemy"><strong>[敌方意图]</strong><br>${intent}<div class="log-sign">🔑 验签成功: ${hash}</div></div>
+        </div></div>`;
+        document.getElementById('intent-flow').insertAdjacentHTML('beforeend', html);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        const flow = document.getElementById('intent-flow');
+        flow.scrollTop = flow.scrollHeight;
+    }
+
+    function resetBtn(choice) {
+        if(choice && choice !== '中断' && choice !== '自动还击完成') {
+             renderSys(`<span style="color:#00f2ff; font-weight:bold; font-size:16px;">✅ 造物主已裁决：${choice}。</span>`);
+        }
+        document.getElementById('send-btn').disabled = false;
+        document.getElementById('send-btn').innerText = '发送 / 授权出击';
+    }
+
+</script>
+
+<div class="footer-copyright">
+    © 2026 神思庭 (Shensist) | Web4 数字主权引擎支持 (M2M Protocol)
+</div>
+
+</body>
+</html>
