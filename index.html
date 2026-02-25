@@ -127,6 +127,125 @@
             .char-grid { grid-template-columns: repeat(2, 1fr); }
             .chat-header::before { content: '☰ 展开配置'; color: #ff1a4d; font-weight: bold; cursor: pointer; margin-right: 10px; border: 1px solid #ff1a4d; padding: 2px 6px; border-radius: 4px;}
         }
+
+        /* ==========================================
+       神思庭 Web4 移动端自适应装甲 (Mobile Responsive)
+       ========================================== */
+        @media screen and (max-width: 768px) {
+            /* 强制将左右布局改为上下布局 */
+            body {
+                flex-direction: column !important;
+                overflow-y: auto !important;
+            }
+            
+            /* 侧边栏在手机上变成顶部控制台 */
+            #sidebar {
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                border-right: none !important;
+                border-bottom: 1px solid #333 !important;
+                padding-bottom: 20px !important;
+            }
+            
+            /* 主聊天区占据剩余空间 */
+            #main-chat {
+                width: 100% !important;
+                height: 70vh !important; /* 手机上给聊天区留出足够高度 */
+            }
+
+            /* 修复标签按钮在手机上的排版 */
+            .tab-container {
+                display: flex !important;
+                flex-direction: row !important;
+                width: 100% !important;
+                justify-content: space-between !important;
+            }
+            
+            .tab-btn {
+                flex: 1 !important;
+                margin: 0 5px !important;
+                font-size: 14px !important;
+            }
+        }
+
+        /* ==========================================
+        神思庭 Web4 移动端自适应装甲 (Mobile Responsive)
+        ========================================== */
+        @media screen and (max-width: 768px) {
+            /* 针对右侧控制台和弹窗容器的强制移动端适配 */
+            #main-site {
+                width: 90% !important;
+                height: auto !important;
+                position: relative !important;
+            }
+            
+            /* 确保右侧悬浮元素在手机上变成流式布局 */
+            .sidebar, .control-panel, .popup-container, .modal-overlay {
+                width: 90% !important;
+                height: auto !important;
+                position: relative !important;
+                margin: 0 auto !important;
+                float: none !important;
+            }
+            
+            /* 防止文字和按钮挤在一起 */
+            .nav-icons, .tab-container, .button-group {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+                width: 100% !important;
+            }
+            
+            .nav-icon, .tab-btn, .control-btn {
+                width: 100% !important;
+                margin: 5px 0 !important;
+                text-align: center !important;
+            }
+        }
+
+        /* ==========================================
+        神思庭 Glassmorphism 毛玻璃模态框样式
+        ========================================== */
+        .shensist-glass-modal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.85); 
+            backdrop-filter: blur(5px); 
+            z-index: 9999; 
+            align-items: center; 
+            justify-content: center; 
+            display: flex;
+        }
+        
+        .shensist-glass-modal .modal-content { 
+            background: #111; 
+            border: 1px solid #ff1a4d; 
+            box-shadow: 0 0 20px rgba(255, 26, 77, 0.2); 
+            width: 90%; 
+            max-width: 500px; 
+            padding: 30px; 
+            border-radius: 4px; 
+            position: relative; 
+            font-family: 'Courier New', Courier, monospace; 
+        }
+        
+        .shensist-glass-modal .close-btn { 
+            position: absolute; 
+            top: 10px; 
+            right: 15px; 
+            color: #ff1a4d; 
+            font-size: 24px; 
+            cursor: pointer; 
+            transition: transform 0.3s; 
+        }
+        
+        .shensist-glass-modal .close-btn:hover { 
+            transform: scale(1.2); 
+        }
     </style>
 </head>
 <body>
@@ -237,13 +356,27 @@
                     </div>
                 </div>
 
-                <label class="control-group">决策算力矩阵 (2026版)</label>
-                <select id="model-select" onchange="toggleCustomModel()">
-                    <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (天算·造物引擎)</option>
-                    <option value="gemini-3.1-flash-preview">Gemini 3.1 Flash (天算·瞬息)</option>
-                    <option value="deepseek-chat">DeepSeek-V3 (通用拉扯)</option>
-                    <option value="custom">- 输入自定义模型名称 -</option>
-                </select>
+                <div class="setting-item">
+                    <label>决策算力矩阵 (2026版)</label>
+                    <select id="modelSelect" style="width: 100%; padding: 8px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 4px; margin-top: 5px;">
+                        <optgroup label="✨ 神思天算引擎">
+                            <option value="gemini-3.1-pro" selected>Gemini 3.1 Pro (天算·造物引擎)</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (天算·深思)</option>
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (天算·瞬息)</option>
+                        </optgroup>
+                        <optgroup label="🔥 东方算力列阵">
+                            <option value="deepseek-chat">DeepSeek-V3 (通用拉扯)</option>
+                            <option value="deepseek-reasoner">DeepSeek-R1 (深度思考)</option>
+                            <option value="qwen-max">Qwen-Max (通义千问·极)</option>
+                            <option value="moonshot-v1-128k">Kimi (月之暗面长文本)</option>
+                        </optgroup>
+                        <optgroup label="🌍 全球战术盟友">
+                            <option value="gpt-4o">GPT-4o (全能战神)</option>
+                            <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet (逻辑解析)</option>
+                        </optgroup>
+                        <option value="custom">- 输入自定义模型名称 -</option>
+                    </select>
+                </div>
                 <input type="text" id="custom-model-input" style="display:none;" placeholder="在此输入自定义模型 ID">
 
                 <label class="control-group">算力凭证 (API Key)</label>
@@ -279,6 +412,25 @@
                 <input type="text" value="PeerJS (WebRTC DataChannel)" disabled style="color:#888;">
                 <label class="control-group">大模型博弈回合上限</label>
                 <input type="number" value="3">
+                
+                <div style="margin-top: 15px;">
+                    <label style="color: #ff1a4d; font-weight: bold;">决策算力矩阵 (2026版)</label>
+                    <select id="modelSelect" style="width: 100%; padding: 10px; background: #000; color: #00ff00; border: 1px solid #ff1a4d; margin-top: 8px;">
+                        <optgroup label="✨ 神思天算引擎">
+                            <option value="gemini-3.1-pro" selected>Gemini 3.1 Pro (天算·造物引擎)</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (天算·深思)</option>
+                        </optgroup>
+                        <optgroup label="🔥 东方算力列阵">
+                            <option value="deepseek-chat">DeepSeek-V3 (通用拉扯)</option>
+                            <option value="deepseek-reasoner">DeepSeek-R1 (深度思考)</option>
+                            <option value="qwen-max">Qwen-Max (通义千问·极)</option>
+                        </optgroup>
+                        <optgroup label="🌍 全球战术盟友">
+                            <option value="gpt-4o">GPT-4o (全能战神)</option>
+                            <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (逻辑解析)</option>
+                        </optgroup>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -333,6 +485,38 @@
                     <button class="btn-launch" id="send-btn" onclick="startCombat()">授权出击</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="shensist-footer-nav" style="position: fixed; bottom: 15px; left: 20px; z-index: 900; font-family: monospace; font-size: 12px; color: #666; display: flex; gap: 15px;">
+        <span id="btn-protocol" style="cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='#ff1a4d'" onmouseout="this.style.color='#666'">[ 操作纲领 ]</span>
+        <span id="btn-genesis" style="cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='#ff1a4d'" onmouseout="this.style.color='#666'">[ 神思起源 ]</span>
+    </div>
+
+    <div id="modal-protocol" class="shensist-glass-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="document.getElementById('modal-protocol').style.display='none'">&times;</span>
+            <h2 style="color: #ff1a4d; border-bottom: 1px solid #ff1a4d; padding-bottom: 10px;">📜 智信 V2026 · 操作纲领</h2>
+            <ul style="color: #ccc; line-height: 1.8; margin-top: 15px; padding-left: 20px;">
+                <li><strong style="color: #00ff00;">绝对主权 (物理隔离)：</strong>本终端为 100% 纯前端架构，无任何中心化后端服务器。您的 API 密钥、算力配置及商业博弈数据，仅加密存储于您本地浏览器的沙盒中。</li>
+                <li><strong style="color: #00ff00;">意图对撞 (P2P 穿透)：</strong>基于 WebRTC 底层协议。当您寻址对手时，将建立端到端的军用级加密信道，斩断一切中间商监听。</li>
+                <li><strong style="color: #00ff00;">算力调度：</strong>在右侧面板配置您的专属大模型算力，赋予山海经数字分身（如重黎、青黛）以定性分析的灵魂。</li>
+            </ul>
+            <p style="color: #666; font-size: 12px; margin-top: 20px; text-align: center;">警告：切勿向不受信任的节点泄露您的 ZX-ID。</p>
+        </div>
+    </div>
+
+    <div id="modal-genesis" class="shensist-glass-modal" style="display: none;">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close-btn" onclick="document.getElementById('modal-genesis').style.display='none'">&times;</span>
+            <h2 style="color: #ff1a4d;">👁️ 神思起源</h2>
+            <p style="color: #fff; font-size: 16px; margin-top: 20px; font-style: italic;">"当古典神话的灵魂，注入冷酷的硅基协议。"</p>
+            <div style="color: #aaa; line-height: 1.8; margin-top: 20px; text-align: left; background: rgba(255,26,77,0.05); padding: 15px; border-left: 3px solid #ff1a4d;">
+                <p><strong>缔造者：</strong>神思庭 AI山海造物主 Shensi-ST</p>
+                <p><strong>核心铭文：</strong>四十载传统文学、音乐、影视积淀，现深耕 AI 跨行复合领域。我们斩断中心化大厂的枷锁，将《山海经》的图腾刻入 Web4 的基因。</p>
+                <p><strong>神思矩阵：</strong>重黎 (男主) | 青黛 (女主) | 马龙 (护法) | 九尾狐 (幻境)</p>
+            </div>
+            <p style="color: #00ff00; font-size: 12px; margin-top: 20px; font-family: monospace;">SYSTEM.STATUS: SOVEREIGNTY SECURED</p>
         </div>
     </div>
 
@@ -547,10 +731,25 @@
         document.getElementById('mobile-sidebar').classList.toggle('mobile-open');
     }
 
+    // 【神思庭】修复后的标签切换逻辑
+    function switchTab(tabId) {
+        // 1. 移除所有按钮的激活状态
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        // 2. 隐藏所有的内容面板 (千万不要隐藏按钮本身)
+        document.querySelectorAll('.tab-panel').forEach(panel => panel.style.display = 'none');
+        
+        // 3. 激活当前点击的按钮
+        event.currentTarget.classList.add('active');
+        // 4. 显示对应的内容面板
+        const targetPanel = document.getElementById(tabId);
+        if(targetPanel) targetPanel.style.display = 'block';
+    }
+
     function switchNav(el, tab) {
         document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
         el.classList.add('active');
-        document.querySelectorAll('.sidebar > div').forEach(d => d.classList.add('hidden-panel'));
+        // 只隐藏内容面板，不要隐藏按钮容器！
+        document.querySelectorAll('[id^="panel-"]').forEach(d => d.classList.add('hidden-panel'));
         document.getElementById('panel-' + tab).classList.remove('hidden-panel');
         if(window.innerWidth <= 768 && tab !== 'chat') {
             document.getElementById('mobile-sidebar').classList.add('mobile-open');
@@ -787,6 +986,30 @@
         document.getElementById('send-btn').disabled = false;
         document.getElementById('send-btn').innerText = '发送 / 授权出击';
     }
+
+    // ==========================================
+    // 神思庭底部导航模态框触发逻辑
+    // ==========================================
+    document.getElementById('btn-protocol').addEventListener('click', () => { 
+        document.getElementById('modal-protocol').style.display = 'flex'; 
+    });
+
+    document.getElementById('btn-genesis').addEventListener('click', () => { 
+        document.getElementById('modal-genesis').style.display = 'flex'; 
+    });
+
+    // 点击模态框背景关闭
+    document.getElementById('modal-protocol').addEventListener('click', function(e) {
+        if(e.target === this) {
+            this.style.display = 'none';
+        }
+    });
+
+    document.getElementById('modal-genesis').addEventListener('click', function(e) {
+        if(e.target === this) {
+            this.style.display = 'none';
+        }
+    });
 
 </script>
 
