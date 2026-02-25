@@ -38,6 +38,12 @@
         
         /* 侧边面板 */
         .sidebar { width: 320px; background: #050505; border-right: 1px solid #222; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; z-index: 40; transition: transform 0.3s ease; }
+        
+        /* 🚨 修复一：强制意图/寻址/算力三个按钮横向完美排列 */
+        .nav-icons { display: flex; flex-direction: row; justify-content: space-between; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 15px; }
+        .nav-icons .nav-icon { width: auto; height: auto; padding: 10px 0; flex: 1; border-radius: 6px; background: #111; border: 1px solid #333; text-align: center; font-size: 14px; }
+        .nav-icons .nav-icon.active { background: #ff1a4d; border-color: #ff1a4d; color: #fff; font-weight: bold; }
+
         .control-group { font-size: 13px; color: #aaa; display: block; margin-top: 15px; margin-bottom: 8px; font-weight: bold; }
         select, input[type="text"], input[type="password"] { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; border-radius: 6px; outline: none; margin-bottom: 15px; }
         textarea.config-text { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; border-radius: 6px; min-height: 100px; resize: none; outline: none; margin-bottom: 15px; }
@@ -93,7 +99,7 @@
         .input-wrap textarea { height: 50px; flex: 1; margin-bottom: 0; background: transparent; border: 1px solid #333; border-radius: 6px; padding: 10px; color: #fff; outline: none; font-family: inherit; resize: none;}
         .btn-launch { padding: 0 20px; height: 50px; background: #ff1a4d; border: none; color: #fff; font-weight: bold; cursor: pointer; border-radius: 6px; }
 
-        /* 纯净注册模态框 (双选项卡满血归来) */
+        /* 纯净注册模态框 */
         .auth-gate { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items:center; justify-content:center; padding: 20px;}
         .auth-card { background: #111; border: 1px solid #333; padding: 30px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 0 40px rgba(255,26,77,0.2); }
         
@@ -128,85 +134,7 @@
             .chat-header::before { content: '☰ 展开配置'; color: #ff1a4d; font-weight: bold; cursor: pointer; margin-right: 10px; border: 1px solid #ff1a4d; padding: 2px 6px; border-radius: 4px;}
         }
 
-        /* ==========================================
-       神思庭 Web4 移动端自适应装甲 (Mobile Responsive)
-       ========================================== */
-        @media screen and (max-width: 768px) {
-            /* 强制将左右布局改为上下布局 */
-            body {
-                flex-direction: column !important;
-                overflow-y: auto !important;
-            }
-            
-            /* 侧边栏在手机上变成顶部控制台 */
-            #sidebar {
-                width: 100% !important;
-                height: auto !important;
-                min-height: auto !important;
-                border-right: none !important;
-                border-bottom: 1px solid #333 !important;
-                padding-bottom: 20px !important;
-            }
-            
-            /* 主聊天区占据剩余空间 */
-            #main-chat {
-                width: 100% !important;
-                height: 70vh !important; /* 手机上给聊天区留出足够高度 */
-            }
-
-            /* 修复标签按钮在手机上的排版 */
-            .tab-container {
-                display: flex !important;
-                flex-direction: row !important;
-                width: 100% !important;
-                justify-content: space-between !important;
-            }
-            
-            .tab-btn {
-                flex: 1 !important;
-                margin: 0 5px !important;
-                font-size: 14px !important;
-            }
-        }
-
-        /* ==========================================
-        神思庭 Web4 移动端自适应装甲 (Mobile Responsive)
-        ========================================== */
-        @media screen and (max-width: 768px) {
-            /* 针对右侧控制台和弹窗容器的强制移动端适配 */
-            #main-site {
-                width: 90% !important;
-                height: auto !important;
-                position: relative !important;
-            }
-            
-            /* 确保右侧悬浮元素在手机上变成流式布局 */
-            .sidebar, .control-panel, .popup-container, .modal-overlay {
-                width: 90% !important;
-                height: auto !important;
-                position: relative !important;
-                margin: 0 auto !important;
-                float: none !important;
-            }
-            
-            /* 防止文字和按钮挤在一起 */
-            .nav-icons, .tab-container, .button-group {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 10px !important;
-                width: 100% !important;
-            }
-            
-            .nav-icon, .tab-btn, .control-btn {
-                width: 100% !important;
-                margin: 5px 0 !important;
-                text-align: center !important;
-            }
-        }
-
-        /* ==========================================
-        神思庭 Glassmorphism 毛玻璃模态框样式
-        ========================================== */
+        /* 神思庭 Glassmorphism 毛玻璃模态框样式 */
         .shensist-glass-modal { 
             position: fixed; 
             top: 0; 
@@ -245,6 +173,11 @@
         
         .shensist-glass-modal .close-btn:hover { 
             transform: scale(1.2); 
+        }
+
+        @keyframes pulse {
+            0% { transform: scaleY(0.4); opacity: 0.5; }
+            100% { transform: scaleY(1); opacity: 1; }
         }
     </style>
 </head>
@@ -308,9 +241,9 @@
 
     <div class="top-bar">
         <div class="brand">
-            <div style="width:24px; height:24px; border-radius:50%; overflow:hidden; border:1px solid #ff1a4d;">
+            <div style="width:36px; height:36px; border-radius:50%; overflow:hidden; border:1px solid #ff1a4d; display:flex; align-items:center; justify-content:center; background:#111; margin-right:5px; flex-shrink:0;">
                 <img src="https://raw.githubusercontent.com/jinv2/Shensist-Proxy/main/logo_ts.png" 
-                     style="width:50px; height:50px; border-radius:8px;" 
+                     style="width:100%; height:100%; object-fit:contain;" 
                      onerror="this.src='logo_ts.png'">
             </div>
             神思智能体 · 智信
@@ -336,16 +269,19 @@
             </div>
 
             <div class="nav-icons">
-                <div class="nav-icon active" onclick="switchNav(this, 'chat')">意图</div>
-                <div class="nav-icon" onclick="switchNav(this, 'contacts')">寻址</div>
-                <div class="nav-icon" onclick="switchNav(this, 'settings')">算力</div>
+                <div class="nav-icon active" onclick="switchInnerTab(this, 'tab-yitu')">意图</div>
+                <div class="nav-icon" onclick="switchInnerTab(this, 'tab-xunzhi')">寻址</div>
+                <div class="nav-icon" onclick="switchInnerTab(this, 'tab-suanli')">算力</div>
             </div>
 
-            <div id="panel-chat">
+            <div id="tab-yitu" class="tab-panel" style="display:block; text-align:center; padding: 20px; color: #666;">
+                [ 当前无活动意图，请寻址节点或配置算力 ]
+            </div>
+
+            <div id="tab-xunzhi" class="tab-panel" style="display:none;">
                 <div style="font-weight:bold; font-size:14px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
                     智信通讯录 <button class="stage-btn" onclick="addFriend()" style="padding:4px 8px; border-color:#ff1a4d; color:#ff1a4d;">+ 寻址</button>
                 </div>
-                
                 <div id="contact-list">
                     <div class="contact-card active" onclick="selectFriend(this, '商务谈判 Agent', 'ZX-TEST')">
                         <div class="avatar-circle" id="my-avatar">资</div>
@@ -355,10 +291,12 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div id="tab-suanli" class="tab-panel" style="display:none;">
                 <div class="setting-item">
                     <label>决策算力矩阵 (2026版)</label>
-                    <select id="modelSelect" style="width: 100%; padding: 8px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 4px; margin-top: 5px;">
+                    <select id="modelSelect" onchange="toggleCustomModel()" style="width: 100%; padding: 8px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 4px; margin-top: 5px;">
                         <optgroup label="✨ 神思天算引擎">
                             <option value="gemini-3.1-pro" selected>Gemini 3.1 Pro (天算·造物引擎)</option>
                             <option value="gemini-1.5-pro">Gemini 1.5 Pro (天算·深思)</option>
@@ -412,25 +350,6 @@
                 <input type="text" value="PeerJS (WebRTC DataChannel)" disabled style="color:#888;">
                 <label class="control-group">大模型博弈回合上限</label>
                 <input type="number" value="3">
-                
-                <div style="margin-top: 15px;">
-                    <label style="color: #ff1a4d; font-weight: bold;">决策算力矩阵 (2026版)</label>
-                    <select id="modelSelect" style="width: 100%; padding: 10px; background: #000; color: #00ff00; border: 1px solid #ff1a4d; margin-top: 8px;">
-                        <optgroup label="✨ 神思天算引擎">
-                            <option value="gemini-3.1-pro" selected>Gemini 3.1 Pro (天算·造物引擎)</option>
-                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (天算·深思)</option>
-                        </optgroup>
-                        <optgroup label="🔥 东方算力列阵">
-                            <option value="deepseek-chat">DeepSeek-V3 (通用拉扯)</option>
-                            <option value="deepseek-reasoner">DeepSeek-R1 (深度思考)</option>
-                            <option value="qwen-max">Qwen-Max (通义千问·极)</option>
-                        </optgroup>
-                        <optgroup label="🌍 全球战术盟友">
-                            <option value="gpt-4o">GPT-4o (全能战神)</option>
-                            <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (逻辑解析)</option>
-                        </optgroup>
-                    </select>
-                </div>
             </div>
         </div>
 
@@ -452,9 +371,24 @@
                 <div class="chat-row sys"><div class="log-sys">-- 物理信道初始化完成，基于纯浏览器 WebRTC --</div></div>
             </div>
 
+            <div id="shensist-voice-panel" style="background: #080808; border-top: 1px solid #222; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 16px; color: #888;">🎤</div>
+                    <div style="display: flex; gap: 4px; height: 18px; align-items: center;">
+                        <div style="width: 3px; height: 60%; background: #00ff00; animation: pulse 1s infinite alternate;"></div>
+                        <div style="width: 3px; height: 100%; background: #00ff00; animation: pulse 0.8s infinite alternate;"></div>
+                        <div style="width: 3px; height: 40%; background: #00ff00; animation: pulse 1.2s infinite alternate;"></div>
+                        <div style="width: 3px; height: 80%; background: #00ff00; animation: pulse 0.9s infinite alternate;"></div>
+                    </div>
+                </div>
+                <div style="font-size: 12px; color: #00ff00; font-family: monospace; letter-spacing: 1px;">
+                    声纹信道: [ 待命 ]
+                </div>
+            </div>
+
             <div class="input-console">
                 <div class="toolbar">
-                    <span class="tool-icon" onclick="toggleEmoji()">😊 表情</span>
+                    <span class="tool-icon" onclick="toggleEmoji(event)">😊 表情</span>
                     <span class="tool-icon" id="mic-btn" onclick="toggleMic()">🎤 语音</span>
                     <span class="tool-icon" onclick="document.getElementById('real-img-up').click()">🖼️ 图片</span>
                     <span class="tool-icon" onclick="document.getElementById('real-file-up').click()">📄 文件</span>
@@ -524,7 +458,6 @@
     // 【神思庭·主权基因锁】
     (function checkSovereignty() {
         const currentDomain = window.location.hostname;
-        // 允许运行的合法领地 (如果客户是下载 HTML 离线双击运行，域名为空或 localhost，默认放行)
         const allowed = ['shensist.top', 'jinv2.github.io', 'localhost', '127.0.0.1', '']; 
         
         let isLegal = false;
@@ -533,7 +466,6 @@
         }
         
         if(!isLegal) {
-            // 触发自毁与警告
             document.body.innerHTML = `
                 <div style="background:#000; color:#ff1a4d; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:monospace; text-align:center; padding:20px;">
                     <h1 style="font-size:40px;">🛑 盗火者警报</h1>
@@ -545,16 +477,9 @@
         }
     })();
 
-    // ==========================================
-    // 神思庭·前端防篡改与动态主权哈希 (Genesis Web4 Anti-Tamper)
-    // ==========================================
     async function verifyShensistCopyright() {
-        // 核心版权声明必须存在于 DOM 树中
         const copyrightStr = "神思庭 (Shensist)";
-        
-        // 1. 扫描整个网页的 HTML 是否被恶意"换皮"或抹除版权
         if (!document.documentElement.innerHTML.includes(copyrightStr)) {
-            // 发现篡改，立刻用黑屏警报覆盖整个网页，阻断一切交互
             document.body.innerHTML = `
                 <div style="background:#000; color:#ff1a4d; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:monospace; text-align:center; padding:20px;">
                     <h1 style="font-size:40px;">🛑 [致命违规]</h1>
@@ -565,32 +490,22 @@
             throw new Error("Shensist Copyright Violation: Node Terminated.");
         }
 
-        // 2. 生成动态防伪哈希凭证 (调用浏览器底层 Web Crypto API 生成 SHA-256)
         const timeStamp = new Date().getTime().toString();
         const msgBuffer = new TextEncoder().encode(copyrightStr + timeStamp);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        
-        // 取前 16 位，与您的 Python 架构保持绝对一致
         const genesisHash = hashHex.substring(0, 16); 
 
-        // 3. 在 F12 开发者控制台打印威压宣告
         console.log(`%c🛡️ 神思庭版权底层校验通过 | 协议防伪哈希: ${genesisHash}`, 'color: #00ff00; font-weight: bold; font-size: 14px;');
         console.log(`%c🌐 智信节点主权已启动，P2P 寻址就绪`, 'color: #00ff00; font-size: 12px;');
-        
-        // 4. 将哈希值挂载到全局变量，供您的 WebRTC P2P 握手协议调用
         window.SHENSIST_GENESIS_HASH = genesisHash;
     }
 
-    // 确保在网页骨架加载完毕的第一时间，以最高优先级执行自检！
     document.addEventListener('DOMContentLoaded', () => {
         verifyShensistCopyright().catch(console.error);
     });
 
-    // ==========================================
-    // 1. Web4 纯浏览器主权存储 (替代 Python 后端)
-    // ==========================================
     let myZxId = localStorage.getItem('shensist_zx_id');
     let currentPeer = null;
     let activeConnection = null;
@@ -637,7 +552,6 @@
         alert("已复制您的 ID: " + myZxId);
     }
 
-    // 核心修复：纯前端 FileReader 导入印章
     function importSeal(input) {
         if(!input.files || !input.files[0]) return;
         const reader = new FileReader();
@@ -663,7 +577,6 @@
         reader.readAsText(input.files[0]);
     }
 
-    // 核心修复：无感下载印章 (不会造成页面消失刷新)
     function exportSealBtn() {
         const data = {
             zx_id: myZxId,
@@ -680,12 +593,8 @@
         document.body.removeChild(a);
     }
 
-    // ==========================================
-    // 2. 真实 WebRTC P2P 网络 (跨网穿透核心)
-    // ==========================================
     function initWebRTC() {
         currentPeer = new Peer(myZxId, { debug: 2 });
-        
         currentPeer.on('open', (id) => {
             console.log('WebRTC 节点已上线:', id);
             renderSys(`🌐 节点已成功锚定至全网 WebRTC 穿透路由`);
@@ -723,24 +632,21 @@
         });
     }
 
-    // ==========================================
-    // 3. UI 交互与自适应逻辑
-    // ==========================================
     function toggleSidebar() {
         if(window.innerWidth > 768) return;
         document.getElementById('mobile-sidebar').classList.toggle('mobile-open');
     }
 
-    // 【神思庭】修复后的标签切换逻辑
-    function switchTab(tabId) {
-        // 1. 移除所有按钮的激活状态
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        // 2. 隐藏所有的内容面板 (千万不要隐藏按钮本身)
+    // 修复后的：独立的子面板切换神经
+    function switchInnerTab(btnElement, tabId) {
+        // 1. 移除所有同级按钮的高亮
+        btnElement.parentElement.querySelectorAll('.nav-icon').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active'); // 当前按钮发光
+        
+        // 2. 隐藏三个子面板
         document.querySelectorAll('.tab-panel').forEach(panel => panel.style.display = 'none');
         
-        // 3. 激活当前点击的按钮
-        event.currentTarget.classList.add('active');
-        // 4. 显示对应的内容面板
+        // 3. 唤醒被点击的面板
         const targetPanel = document.getElementById(tabId);
         if(targetPanel) targetPanel.style.display = 'block';
     }
@@ -748,7 +654,6 @@
     function switchNav(el, tab) {
         document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
         el.classList.add('active');
-        // 只隐藏内容面板，不要隐藏按钮容器！
         document.querySelectorAll('[id^="panel-"]').forEach(d => d.classList.add('hidden-panel'));
         document.getElementById('panel-' + tab).classList.remove('hidden-panel');
         if(window.innerWidth <= 768 && tab !== 'chat') {
@@ -766,8 +671,10 @@
         element.querySelector('input').focus();
     }
 
+    // 修复后的：自定义模型输入框弹射逻辑
     function toggleCustomModel() {
-        const sel = document.getElementById('model-select').value;
+        // 修正了 ID 名称，完美对应 HTML
+        const sel = document.getElementById('modelSelect').value;
         document.getElementById('custom-model-input').style.display = (sel === 'custom') ? 'block' : 'none';
     }
 
@@ -802,7 +709,6 @@
         connectToNode(id);
     }
 
-    // 核心修复：精准修改当前选中的联系人头像
     function selectChar(path, name) {
         document.getElementById('video-display').innerHTML = `<img src="${path}" onerror="this.outerHTML='正在处理 ${name} 视觉数据...'">`;
         let activeCardAvatar = document.querySelector('.contact-card.active .avatar-circle');
@@ -811,8 +717,23 @@
     }
     function closeCharModal(e) { if(!e || e.target===document.getElementById('char-modal')) document.getElementById('char-modal').style.display='none'; }
 
-    function toggleEmoji() { const p = document.getElementById('emoji-picker'); p.style.display = p.style.display === 'none' ? 'flex' : 'none'; }
-    function insertEmoji(e) { document.getElementById('task-input').value += e; toggleEmoji(); document.getElementById('task-input').focus(); }
+    // 🚨 修复三：表情面板交互逻辑升级，单击触发，点击空白关闭
+    function toggleEmoji(event) { 
+        if(event) event.stopPropagation();
+        const p = document.getElementById('emoji-picker'); 
+        p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'flex' : 'none'; 
+    }
+    
+    document.addEventListener('click', function(event) {
+        const picker = document.getElementById('emoji-picker');
+        const isClickInside = picker.contains(event.target);
+        const isEmojiBtn = event.target.closest('.tool-icon'); 
+        if (!isClickInside && !isEmojiBtn && picker.style.display === 'flex') {
+            picker.style.display = 'none';
+        }
+    });
+
+    function insertEmoji(e) { document.getElementById('task-input').value += e; document.getElementById('emoji-picker').style.display = 'none'; document.getElementById('task-input').focus(); }
     
     let isMic = false;
     function toggleMic() {
@@ -832,14 +753,10 @@
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Shensist_Web4_Log.txt"; a.click();
     }
 
-    // ==========================================
-    // 4. 纯前端 API 路由直调 (不经过任何服务器)
-    // ==========================================
     async function callGeminiAPI(apiKey, systemPrompt, userMessage, modelType) {
         if(!apiKey) return { intent: "【拦截】缺少 API Key。", tactic: "算力枯竭" };
         
         let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelType}:generateContent?key=${apiKey}`;
-        // 如果是 DeepSeek，可以根据前端选择切换 URL，这里为了演示稳定，统一封装为通用 JSON 要求
         const instruction = systemPrompt + "\n【强制指令】：严格输出 JSON，勿带 markdown，必须包含：{\"intent_content\": \"公开话术\", \"tactical_goal\": \"战术暗盒\"}";
         
         try {
@@ -860,9 +777,6 @@
         }
     }
 
-    // ==========================================
-    // 5. 黑盒交锋控制器 (左右分界完美重构)
-    // ==========================================
     async function startCombat() {
         const inp = document.getElementById('task-input');
         const v = inp.value.trim();
@@ -871,7 +785,6 @@
         localStorage.setItem('api_key', document.getElementById('api-key').value);
         localStorage.setItem('soul_text', document.getElementById('soul-text').value);
         
-        // 核心修复：人类指令靠右
         document.getElementById('intent-flow').insertAdjacentHTML('beforeend', `<div class="chat-row me"><div class="log-container"><div style="background:#ff1a4d; color:#fff; padding:10px 15px; border-radius:8px 8px 0 8px; font-weight:bold; box-shadow: 0 4px 10px rgba(255,26,77,0.3);">【人类指令】 ${v}</div></div></div>`);
         inp.value = '';
         document.getElementById('send-btn').disabled = true;
@@ -880,7 +793,7 @@
 
         const apiKey = document.getElementById('api-key').value;
         const soul = document.getElementById('soul-text').value;
-        let targetModel = document.getElementById('model-select').value;
+        let targetModel = document.getElementById('modelSelect') ? document.getElementById('modelSelect').value : 'gemini-3.1-pro';
         if(targetModel === 'custom') targetModel = document.getElementById('custom-model-input').value;
 
         if(currentTargetId === 'ZX-TEST') {
@@ -935,7 +848,7 @@
             
             const apiKey = document.getElementById('api-key').value;
             const soul = document.getElementById('soul-text').value;
-            let targetModel = document.getElementById('model-select').value;
+            let targetModel = document.getElementById('modelSelect') ? document.getElementById('modelSelect').value : 'gemini-3.1-pro';
             if(targetModel === 'custom') targetModel = document.getElementById('custom-model-input').value;
             
             let myResponse = await callGeminiAPI(apiKey, soul, `敌方发来意图：${data.intent}。请死守底线进行反击。`, targetModel);
@@ -948,7 +861,6 @@
         }
     }
 
-    // ---- 核心修复：渲染辅助函数 (严格左右对齐) ----
     function renderSys(msg) {
         document.getElementById('intent-flow').insertAdjacentHTML('beforeend', `<div class="chat-row sys"><div class="log-sys">${msg}</div></div>`);
         scrollToBottom();
@@ -987,9 +899,6 @@
         document.getElementById('send-btn').innerText = '发送 / 授权出击';
     }
 
-    // ==========================================
-    // 神思庭底部导航模态框触发逻辑
-    // ==========================================
     document.getElementById('btn-protocol').addEventListener('click', () => { 
         document.getElementById('modal-protocol').style.display = 'flex'; 
     });
@@ -998,7 +907,6 @@
         document.getElementById('modal-genesis').style.display = 'flex'; 
     });
 
-    // 点击模态框背景关闭
     document.getElementById('modal-protocol').addEventListener('click', function(e) {
         if(e.target === this) {
             this.style.display = 'none';
