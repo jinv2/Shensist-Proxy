@@ -633,14 +633,14 @@
     // 升级版：真实 WebRTC P2P 网络 (带断线自愈装甲)
     // ==========================================
     function initWebRTC() {
-        // 🚨 修复纰漏：注入谷歌军工级 STUN 服务器，强行击穿 5G 与 Wi-Fi 之间的物理墙壁！
+        // 🚨 终极换血：启用国内大厂直连 STUN 矩阵，彻底避开跨国黑洞！
         currentPeer = new Peer(myZxId, { 
             debug: 2,
             config: {
                 'iceServers': [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                    { urls: 'stun:stun2.l.google.com:19302' }
+                    { urls: 'stun:stun.qq.com:3478' },         // 腾讯骨干穿透节点
+                    { urls: 'stun:stun.miwifi.com:3478' },     // 小米路由器海量并发节点
+                    { urls: 'stun:stun.chat.bilibili.com:3478' } // B站高连通性节点
                 ]
             }
         });
