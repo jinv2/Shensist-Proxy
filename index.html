@@ -593,8 +593,12 @@
         document.body.removeChild(a);
     }
 
+    // ==========================================
+    // 升级版：真实 WebRTC P2P 网络 (带断线自愈装甲)
+    // ==========================================
     function initWebRTC() {
         currentPeer = new Peer(myZxId, { debug: 2 });
+        
         currentPeer.on('open', (id) => {
             console.log('WebRTC 节点已上线:', id);
             renderSys(`🌐 节点已成功锚定至全网 WebRTC 穿透路由`);
@@ -606,6 +610,18 @@
                 conn.on('data', (data) => { handleIncomingP2PData(data, conn.peer); });
             });
         });
+
+        // 🚨 【新增防御】：底层信令塔断线时，自动触发脉冲重连！
+        currentPeer.on('disconnected', () => {
+            console.warn("⚠️ 底层信号塔连接丢失，引擎正在尝试强制重连...");
+            document.getElementById('p2p-status-icon').innerText = "🟡 信号重连中...";
+            document.getElementById('p2p-status-icon').style.color = "#f5a623";
+            currentPeer.reconnect(); // 强制重启雷达
+        });
+        
+        currentPeer.on('error', (err) => {
+            console.error("PeerJS 底层致命错误:", err);
+        });
     }
 
     function connectToNode(targetId) {
@@ -614,22 +630,41 @@
             document.getElementById('p2p-status-icon').style.color = "#888";
             return; 
         }
+
+        // 🚨 【新增防御】：在发射寻址信号前，先检查雷达是否断电
+        if (currentPeer.disconnected) {
+            console.log("雷达未通电，执行紧急重连...");
+            currentPeer.reconnect();
+        }
+
         document.getElementById('p2p-status-icon').innerText = "🔄 穿透寻址中...";
         document.getElementById('p2p-status-icon').style.color = "#f5a623";
         
-        activeConnection = currentPeer.connect(targetId);
-        activeConnection.on('open', () => {
-            document.getElementById('p2p-status-icon').innerText = "🟢 P2P 已直连";
-            document.getElementById('p2p-status-icon').style.color = "#00f2ff";
-            document.getElementById('status-' + targetId).innerText = "🟢 P2P 加密直连中";
+        try {
+            activeConnection = currentPeer.connect(targetId);
             
-            activeConnection.on('data', (data) => { handleIncomingP2PData(data, targetId); });
-        });
-        
-        activeConnection.on('error', () => {
-            document.getElementById('p2p-status-icon').innerText = "🔴 寻址失败";
+            // 🚨 【新增防御】：拦截空对象，彻底杜绝 TypeError 崩溃！
+            if (!activeConnection) {
+                throw new Error("底盘引擎拒绝生成连接对象");
+            }
+
+            activeConnection.on('open', () => {
+                document.getElementById('p2p-status-icon').innerText = "🟢 P2P 已直连";
+                document.getElementById('p2p-status-icon').style.color = "#00f2ff";
+                document.getElementById('status-' + targetId).innerText = "🟢 P2P 加密直连中";
+                
+                activeConnection.on('data', (data) => { handleIncomingP2PData(data, targetId); });
+            });
+            
+            activeConnection.on('error', (err) => {
+                document.getElementById('p2p-status-icon').innerText = "🔴 寻址失败";
+                document.getElementById('p2p-status-icon').style.color = "#ff1a4d";
+            });
+        } catch (err) {
+            console.error("雷达发射异常被拦截:", err);
+            document.getElementById('p2p-status-icon').innerText = "🔴 穿透异常";
             document.getElementById('p2p-status-icon').style.color = "#ff1a4d";
-        });
+        }
     }
 
     function toggleSidebar() {
@@ -776,11 +811,25 @@
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Shensist_Web4_Log.txt"; a.click();
     }
 
+    // ==========================================
+    // 呈现层升级 1：改造大模型神经，增加"人类翻译官"职能
+    // ==========================================
     async function callGeminiAPI(apiKey, systemPrompt, userMessage, modelType) {
-        if(!apiKey) return { intent: "【拦截】缺少 API Key。", tactic: "算力枯竭" };
+        if(!apiKey) return { 
+            intent: "[本地拒绝执行]", 
+            tactic: "算力枯竭", 
+            summary: "⚠️ 本地算力池未检测到有效密钥，引擎未能点火。" 
+        };
         
         let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelType}:generateContent?key=${apiKey}`;
-        const instruction = systemPrompt + "\n【强制指令】：严格输出 JSON，勿带 markdown，必须包含：{\"intent_content\": \"公开话术\", \"tactical_goal\": \"战术暗盒\"}";
+        
+        // 【核心指令升级】：强制输出 human_summary 汇报字段
+        const instruction = systemPrompt + `
+        【强制指令】：你现在是一个冷酷的AI谈判代理。严格输出 JSON 格式（不要带 markdown 标记如 \`\`\`json）。
+        JSON 必须包含以下三个字段：
+        1. "intent_content": 准备发送给对方的正式商务/谈判话术原文。
+        2. "tactical_goal": 你的底层博弈逻辑和战术意图（暗盒思考）。
+        3. "human_summary": 用极其简短、人类视角的语言向你的造物主汇报当前的交锋状态（如："我方已报底价500元，并向对方施压" 或 "对方要求全网分发权，我方正在衡量"）。`;
         
         try {
             const res = await fetch(url, {
@@ -792,14 +841,28 @@
             });
             const data = await res.json();
             if(data.error) throw new Error(data.error.message);
+            
             const text = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
             const parsed = JSON.parse(text);
-            return { intent: parsed.intent_content || text, tactic: parsed.tactical_goal || "解析战术中..." };
+            
+            return { 
+                intent: parsed.intent_content || text, 
+                tactic: parsed.tactical_goal || "推演战术中...",
+                summary: parsed.human_summary || "正在执行交锋指令..."
+            };
         } catch (e) {
-            return { intent: "【算力波动】无法生成策略。请检查网络或 API Key。", tactic: e.message };
+            // 【优雅降级】：网络断开时，不再抛出冰冷的报错
+            return { 
+                intent: "[底层通信乱码，未能成型]", 
+                tactic: e.message, 
+                summary: "🔴 物理信道受到干扰或算力耗尽，本回合交锋中断，请检查网络。" 
+            };
         }
     }
 
+    // ==========================================
+    // 呈现层升级 2：对接新的 UI 渲染逻辑
+    // ==========================================
     async function startCombat() {
         const inp = document.getElementById('task-input');
         const v = inp.value.trim();
@@ -808,7 +871,7 @@
         localStorage.setItem('api_key', document.getElementById('api-key').value);
         localStorage.setItem('soul_text', document.getElementById('soul-text').value);
         
-        document.getElementById('intent-flow').insertAdjacentHTML('beforeend', `<div class="chat-row me"><div class="log-container"><div style="background:#ff1a4d; color:#fff; padding:10px 15px; border-radius:8px 8px 0 8px; font-weight:bold; box-shadow: 0 4px 10px rgba(255,26,77,0.3);">【人类指令】 ${v}</div></div></div>`);
+        document.getElementById('intent-flow').insertAdjacentHTML('beforeend', `<div class="chat-row me"><div class="log-container"><div style="background:#ff1a4d; color:#fff; padding:10px 15px; border-radius:8px 8px 0 8px; font-weight:bold; box-shadow: 0 4px 10px rgba(255,26,77,0.3);">【最高意志】 ${v}</div></div></div>`);
         inp.value = '';
         document.getElementById('send-btn').disabled = true;
         document.getElementById('send-btn').innerText = '算力调度中...';
@@ -832,7 +895,7 @@
             renderSys(`⚡ [回合 ${round}] P2P 意图流开始对撞...`);
             
             let myResponse = await callGeminiAPI(apiKey, soul, `敌方来信：${enemyMsg}。请结合神思庭底线给出第${round}回合还击。`, model);
-            renderMe(myResponse.intent, myResponse.tactic);
+            renderMe(myResponse.intent, myResponse.tactic, myResponse.summary);
             
             if(round === 2) break;
             
@@ -840,7 +903,7 @@
             await new Promise(r => setTimeout(r, 1500));
             
             let eIntent = round === 1 ? "贵方条件缺乏诚意，我方要求全网分发权，否则即刻切断算力供应。" : "可以接受贵方利润比例，但我方需独占周边IP授权。";
-            renderOther(eIntent, "尝试击穿对方底线，索要更多商业授权。");
+            renderOther(eIntent, "尝试击穿对方底线，索要更多商业授权。", "对方拒绝接受当前报价，转而索要全网分发权。");
             enemyMsg = eIntent;
             await new Promise(r => setTimeout(r, 1000));
         }
@@ -855,19 +918,19 @@
             return;
         }
         
-        renderSys("⚡ 算力引擎正在根据您的意志生成战术...");
+        renderSys("⚡ 算力引擎正在消化您的意志，生成首轮战术...");
         let myResponse = await callGeminiAPI(apiKey, soul, `战略目标：${task}。请生成对敌方话术。`, model);
         
-        renderMe(myResponse.intent, myResponse.tactic);
+        renderMe(myResponse.intent, myResponse.tactic, myResponse.summary);
         
         activeConnection.send({ type: 'intent_strike', intent: myResponse.intent, senderId: myZxId });
-        renderSys("📤 意图包已通过 WebRTC 发送至公网，等待对方节点 API 还击...");
+        renderSys("📤 机器谈判包已通过 WebRTC 发送，等待对方代理还击...");
     }
 
     async function handleIncomingP2PData(data, senderId) {
         if(data.type === 'intent_strike') {
-            renderOther(data.intent, "【真实 P2P 敌方暗盒不可见】");
-            renderSys("⚠️ 遭到意图撞击，引擎正在自动推演防御反击...");
+            renderOther(data.intent, "【真实 P2P 敌方底层数据屏蔽】", "敌方代理抛出了新的谈判方案。");
+            renderSys("⚠️ 侦测到对方报价，我方引擎正在自动推演反击防御...");
             
             const apiKey = document.getElementById('api-key').value;
             const soul = document.getElementById('soul-text').value;
@@ -875,7 +938,7 @@
             if(targetModel === 'custom') targetModel = document.getElementById('custom-model-input').value;
             
             let myResponse = await callGeminiAPI(apiKey, soul, `敌方发来意图：${data.intent}。请死守底线进行反击。`, targetModel);
-            renderMe(myResponse.intent, myResponse.tactic);
+            renderMe(myResponse.intent, myResponse.tactic, myResponse.summary);
             
             if(activeConnection && activeConnection.open) {
                 activeConnection.send({ type: 'intent_strike', intent: myResponse.intent, senderId: myZxId });
@@ -889,21 +952,50 @@
         scrollToBottom();
     }
     
-    function renderMe(intent, tactic) {
+    // ==========================================
+    // 呈现层升级 3：UI 折叠黑盒，高亮人类战报
+    // ==========================================
+    function renderMe(intent, tactic, summary) {
         let hash = "0x" + Math.random().toString(16).substring(2, 10) + "..." ;
-        let html = `<div class="chat-row me"><div class="log-container">
-            <div class="log-tactic"><strong>[战术暗盒 (仅您可见)]</strong><br>${tactic}<div class="log-sign">⚖️ P2P 底层签章: ${hash}</div></div>
-            <div class="log-intent"><strong>[我方出击]</strong><br>${intent}</div>
+        let html = `<div class="chat-row me"><div class="log-container" style="max-width: 100%;">
+            <div style="background:#ff1a4d; color:#fff; padding:12px 15px; border-radius:12px 12px 0 12px; font-weight:bold; box-shadow: 0 4px 15px rgba(255,26,77,0.4); margin-bottom: 5px; font-size: 14px;">
+                🤖 我方代理汇报：${summary || '执行出击指令'}
+            </div>
+            
+            <div style="background: rgba(255,26,77,0.1); border: 1px solid rgba(255,26,77,0.3); padding: 10px 15px; border-radius: 8px 0 8px 8px; color: #ccc; font-size: 13px; margin-bottom: 5px;">
+                <strong>[发给对方的公函]</strong> ${intent}
+            </div>
+
+            <details style="background:#111; border-left: 3px solid #666; padding: 5px 10px; font-size: 12px; color: #888; border-radius: 8px 0 0 8px; cursor: pointer;">
+                <summary style="outline: none;">👁️ 展开底层博弈暗盒 (API日志)</summary>
+                <div style="margin-top: 8px; border-top: 1px dashed #333; padding-top: 8px;">
+                    <strong>[战术逻辑]</strong><br>${tactic}<br>
+                    <div class="log-sign">⚖️ 链上签章: ${hash}</div>
+                </div>
+            </details>
         </div></div>`;
         document.getElementById('intent-flow').insertAdjacentHTML('beforeend', html);
         scrollToBottom();
     }
     
-    function renderOther(intent, tactic) {
+    function renderOther(intent, tactic, summary) {
         let hash = "0x" + Math.random().toString(16).substring(2, 10) + "..." ;
-        let html = `<div class="chat-row other"><div class="log-container">
-            <div class="log-tactic-enemy"><strong>[敌方暗盒-已破解]</strong><br>${tactic}</div>
-            <div class="log-intent-enemy"><strong>[敌方意图]</strong><br>${intent}<div class="log-sign">🔑 验签成功: ${hash}</div></div>
+        let html = `<div class="chat-row other"><div class="log-container" style="max-width: 100%;">
+            <div style="background:#1a1a1a; border: 1px solid #444; color:#fff; padding:12px 15px; border-radius:12px 12px 12px 0; font-weight:bold; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 5px; font-size: 14px;">
+                🎯 敌方代理动作：${summary || '对方传来了新的出价方案'}
+            </div>
+
+            <div style="background: #0a0a0a; border: 1px solid #222; padding: 10px 15px; border-radius: 0 8px 8px 8px; color: #aaa; font-size: 13px; margin-bottom: 5px;">
+                <strong>[收到的公函]</strong> ${intent}
+            </div>
+
+            <details style="background:#1a0a0f; border-left: 3px solid #ff1a4d; padding: 5px 10px; font-size: 12px; color: #ff6688; border-radius: 0 8px 8px 8px; cursor: pointer;">
+                <summary style="outline: none;">👁️ 展开敌方破解暗盒 (API日志)</summary>
+                <div style="margin-top: 8px; border-top: 1px dashed #444; padding-top: 8px;">
+                    <strong>[推测逻辑]</strong><br>${tactic}<br>
+                    <div class="log-sign">🔑 验签成功: ${hash}</div>
+                </div>
+            </details>
         </div></div>`;
         document.getElementById('intent-flow').insertAdjacentHTML('beforeend', html);
         scrollToBottom();
