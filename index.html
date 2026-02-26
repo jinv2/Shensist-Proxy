@@ -633,14 +633,14 @@
     // 升级版：真实 WebRTC P2P 网络 (带断线自愈装甲)
     // ==========================================
     function initWebRTC() {
-        // 🚨 修复致命纰漏：注入 TURN 中继服务器！当 P2P 物理直连被 5G 掐断时，强制走中继通道（微信模式）！
+        // 🚨 终极修复：注入多路 TURN 中继服务器，模拟"微信模式"转发数据
         currentPeer = new Peer(myZxId, { 
             debug: 2,
             config: {
                 'iceServers': [
-                    { urls: 'stun:stun.qq.com:3478' }, // 腾讯 STUN 探路
+                    { urls: 'stun:stun.qq.com:3478' },
                     { urls: 'stun:stun.miwifi.com:3478' },
-                    // ⬇️ 真正的杀手锏：TURN 中继服务器（类似微信服务器，强行转发数据）
+                    // 核心中继：当 5G 防火墙无法穿透时，强行走以下通道转发
                     {
                         urls: "turn:openrelay.metered.ca:80",
                         username: "openrelayproject",
@@ -650,36 +650,38 @@
                         urls: "turn:openrelay.metered.ca:443",
                         username: "openrelayproject",
                         credential: "openrelayproject"
-                    },
-                    {
-                        urls: "turn:openrelay.metered.ca:443?transport=tcp",
-                        username: "openrelayproject",
-                        credential: "openrelayproject"
                     }
-                ]
+                ],
+                'sdpSemantics': 'unified-plan'
             }
         });
         
         currentPeer.on('open', (id) => {
-            console.log('WebRTC 节点已上线:', id);
-            renderSys(`🌐 节点已锚定 (已装载 TURN 中继兜底协议)`);
+            console.log('WebRTC 节点锚定成功:', id);
+            renderSys(`🌐 节点已上线 (微信级 TURN 中继已就绪)`);
         });
 
         currentPeer.on('connection', (conn) => {
             conn.on('open', () => {
-                addFriendToUI(conn.peer, "未知节点(" + conn.peer + ")");
+                if (document.getElementById('p2p-status-icon')) {
+                    document.getElementById('p2p-status-icon').innerText = "🟢 P2P 已直连";
+                    document.getElementById('p2p-status-icon').style.color = "#00f2ff";
+                }
                 conn.on('data', (data) => { handleIncomingP2PData(data, conn.peer); });
             });
         });
 
         currentPeer.on('disconnected', () => {
-            console.warn("⚠️ 底层信号塔连接丢失，引擎强制重连...");
             document.getElementById('p2p-status-icon').innerText = "🟡 信号重连中...";
-            document.getElementById('p2p-status-icon').style.color = "#f5a623";
             currentPeer.reconnect(); 
         });
-        
-        currentPeer.on('error', (err) => { console.error("PeerJS 异常:", err); });
+
+        currentPeer.on('error', (err) => {
+            if(err.type === 'unavailable-id') {
+                renderSys("❌ ID 已被占用，请点击[用户]销毁印章重启");
+            }
+            console.error("PeerJS 异常:", err);
+        });
     }
 
     function connectToNode(targetId) {
