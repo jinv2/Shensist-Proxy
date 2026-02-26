@@ -688,15 +688,16 @@
     // 补全缺失函数：物理级销毁印章并重置
     // ==========================================
     function forgeSeal() {
-        if (confirm("🚨 警告：即将物理销毁当前赛博印章（ID），强制重启节点以清除幽灵连接。确定吗？")) {
-            // 1. 彻底切断现有连接
-            if (currentPeer) {
-                currentPeer.destroy();
-            }
-            // 2. 清除本地存储的 ID 缓存
+        if (confirm("🚨 警告：即将物理销毁当前赛博印章（ID），强制重启节点。确定吗？")) {
+            if (currentPeer) currentPeer.destroy();
             localStorage.removeItem('zx_peer_id'); 
-            // 3. 强制刷新页面重新生成全新 ID
             window.location.reload();
+        } else {
+            // 🚨 修复纰漏：如果用户选取消，必须手动隐藏 Modal 容器
+            const userModal = document.getElementById('user-modal'); // 请确认您的 Modal ID 是否叫这个
+            if (userModal) {
+                userModal.style.display = 'none'; 
+            }
         }
     }
 
