@@ -377,7 +377,7 @@
                     <p style="font-size:12px; color:#aaa; margin-bottom:20px;">您的数据已深度绑定至当前浏览器缓存。若需更换设备，请导出印章。</p>
                     <button class="stage-btn primary" onclick="exportSealBtn()" style="padding:10px 20px;">📥 导出核心印章 (.shensist)</button>
                 </div>
-                <button class="stage-btn" style="width: 100%;" onclick="if(confirm('警告：此操作将清空本地所有凭证！')){localStorage.clear(); location.reload();}">销毁本地印章并重启</button>
+                <button class="stage-btn" style="width: 100%;" onclick="masterDestruction()">销毁本地印章并重启</button>
             </div>
 
             <div id="panel-settings" class="hidden-panel">
@@ -640,7 +640,7 @@
                 'iceServers': [
                     { urls: 'stun:stun.qq.com:3478' },
                     { urls: 'stun:stun.miwifi.com:3478' },
-                    // 核心中继：当 5G 防火墙无法穿透时，强行走以下通道转发
+                    // 核心补丁：当 5G 无法穿透时，强制通过中继转发数据
                     {
                         urls: "turn:openrelay.metered.ca:80",
                         username: "openrelayproject",
@@ -651,8 +651,7 @@
                         username: "openrelayproject",
                         credential: "openrelayproject"
                     }
-                ],
-                'sdpSemantics': 'unified-plan'
+                ]
             }
         });
         
@@ -687,17 +686,13 @@
     // ==========================================
     // 补全缺失函数：物理级销毁印章并重置
     // ==========================================
-    function forgeSeal() {
+    function masterDestruction() {
         if (confirm("🚨 警告：即将物理销毁当前赛博印章（ID），强制重启节点。确定吗？")) {
             if (currentPeer) currentPeer.destroy();
-            localStorage.removeItem('zx_peer_id'); 
-            window.location.reload();
-        } else {
-            // 🚨 修复纰漏：如果用户选取消，必须手动隐藏 Modal 容器
-            const userModal = document.getElementById('user-modal'); // 请确认您的 Modal ID 是否叫这个
-            if (userModal) {
-                userModal.style.display = 'none'; 
-            }
+            // 清除您代码中所有可能用到的 ID 缓存 Key
+            localStorage.removeItem('shensist_zx_id'); 
+            localStorage.removeItem('zx_peer_id');
+            location.reload();
         }
     }
 
@@ -893,103 +888,31 @@
     // 自动适配: Gemini / GPT / Claude / DeepSeek / Ollama本地
     // ==========================================
     async function callGeminiAPI(apiKey, systemPrompt, userMessage, modelType) {
-        if(!apiKey && !modelType.includes('local') && !modelType.includes('ollama')) {
-            return { intent: "[防线拦截]", tactic: "算力枯竭", summary: "⚠️ 未检测到有效密钥，引擎拒绝点火。" };
-        }
+        if(!apiKey && !modelType.includes('local')) return { intent: "算力缺失", summary: "🔴 未配置 Key" };
         
-        // 核心指令：强制三段式 JSON 人类简报
-        const instruction = systemPrompt + `
-        【强制指令】：你是一个冷酷的AI谈判代理。严格输出JSON格式（绝不包含 \`\`\`json 等标记）。
-        JSON 必须包含：
-        1. "intent_content": 发给对方的正式话术原文。
-        2. "tactical_goal": 底层博弈逻辑和战术意图（暗盒思考）。
-        3. "human_summary": 用极其简短的语言向造物主汇报当前交锋状态（如："我方已报底价500元"）。`;
-
-        let endpoint = "";
-        let headers = { "Content-Type": "application/json" };
-        let body = {};
-        let parseResponse = null;
+        const instruction = systemPrompt + `\n【强制指令】：严格输出JSON，包含字段：intent_content, tactical_goal, human_summary`;
+        
+        // 自动适配不同阵营的 Endpoint
+        let endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelType}:generateContent?key=${apiKey}`;
+        if(modelType.startsWith('gpt')) endpoint = "https://api.openai.com/v1/chat/completions";
+        if(modelType.startsWith('claude')) endpoint = "https://api.anthropic.com/v1/messages";
+        if(modelType.includes('local')) endpoint = "http://localhost:11434/v1/chat/completions";
 
         try {
-            // 🟢 路由 1: 纯血天算 (Google Gemini 阵营)
-            if (modelType.startsWith('gemini')) {
-                let realModel = modelType === 'gemini-3.1-pro' ? 'gemini-1.5-pro' : modelType; // 降级保护
-                endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${realModel}:generateContent?key=${apiKey}`;
-                body = {
-                    system_instruction: { parts: [{ text: instruction }] },
-                    contents: [{ parts: [{ text: userMessage }] }]
-                };
-                parseResponse = async (res) => {
-                    const data = await res.json();
-                    if(data.error) throw new Error(data.error.message);
-                    return data.candidates[0].content.parts[0].text;
-                };
-            }
-            // 🟣 路由 2: 逻辑解析 (Anthropic Claude 阵营)
-            else if (modelType.startsWith('claude')) {
-                endpoint = "https://api.anthropic.com/v1/messages";
-                headers["x-api-key"] = apiKey;
-                headers["anthropic-version"] = "2023-06-01";
-                headers["anthropic-dangerously-allow-browser"] = "true"; // 允许前端暴力跨域
-                body = {
-                    model: modelType, max_tokens: 1024, system: instruction,
-                    messages: [{ role: "user", content: userMessage }]
-                };
-                parseResponse = async (res) => {
-                    const data = await res.json();
-                    if(data.error) throw new Error(data.error.message);
-                    return data.content[0].text;
-                };
-            }
-            // 🔴 & 🟡 路由 3: 全能战神与计算主权 (OpenAI / DeepSeek / 本地 Ollama)
-            else {
-                let baseUrl = "https://api.openai.com/v1/chat/completions";
-                if (modelType.startsWith('deepseek')) baseUrl = "https://api.deepseek.com/chat/completions";
-                
-                // ⚡ 神思庭 Ubuntu 本地算力直通车 (绕过公网，直连 GTX 1050 Ti)
-                if (modelType.includes('local') || modelType.includes('ollama')) {
-                    baseUrl = "http://localhost:11434/v1/chat/completions"; 
-                }
-
-                endpoint = baseUrl;
-                if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
-                
-                body = {
-                    model: modelType,
-                    response_format: { type: "json_object" },
-                    messages: [
-                        { role: "system", content: instruction },
-                        { role: "user", content: userMessage }
-                    ]
-                };
-                parseResponse = async (res) => {
-                    const data = await res.json();
-                    if(data.error) throw new Error(data.error.message);
-                    return data.choices[0].message.content;
-                };
-            }
-
-            // 🚀 发射跨洋请求
-            const response = await fetch(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(body) });
-            const rawText = await parseResponse(response);
-            
-            // 🧽 清洗赛博包浆，提取纯净 JSON
-            const cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-            const parsed = JSON.parse(cleanText);
-            
-            return { 
-                intent: parsed.intent_content || cleanText, 
-                tactic: parsed.tactical_goal || "推演战术中...",
-                summary: parsed.human_summary || "正在执行交锋指令..."
-            };
-
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: instruction + "\n" + userMessage }] }]
+                })
+            });
+            const data = await res.json();
+            // 简单兼容处理 Google 格式
+            const raw = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const parsed = JSON.parse(raw);
+            return { intent: parsed.intent_content, tactic: parsed.tactical_goal, summary: parsed.human_summary };
         } catch (e) {
-            console.error("算力路由异常断裂:", e);
-            return { 
-                intent: "[异星算力连接断裂，未能成型]", 
-                tactic: `路由接口回传异常: ${e.message}`, 
-                summary: `🔴 算力调度失败！请确认：1.该模型的 API 密钥是否匹配；2.本地 Ubuntu Ollama 端口是否开启。` 
-            };
+            return { intent: "[路由劫持]", tactic: e.message, summary: "🔴 算力链路异常" };
         }
     }
 
