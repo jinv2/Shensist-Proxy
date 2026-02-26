@@ -633,21 +633,36 @@
     // 升级版：真实 WebRTC P2P 网络 (带断线自愈装甲)
     // ==========================================
     function initWebRTC() {
-        // 🚨 终极换血：启用国内大厂直连 STUN 矩阵，彻底避开跨国黑洞！
+        // 🚨 修复致命纰漏：注入 TURN 中继服务器！当 P2P 物理直连被 5G 掐断时，强制走中继通道（微信模式）！
         currentPeer = new Peer(myZxId, { 
             debug: 2,
             config: {
                 'iceServers': [
-                    { urls: 'stun:stun.qq.com:3478' },         // 腾讯骨干穿透节点
-                    { urls: 'stun:stun.miwifi.com:3478' },     // 小米路由器海量并发节点
-                    { urls: 'stun:stun.chat.bilibili.com:3478' } // B站高连通性节点
+                    { urls: 'stun:stun.qq.com:3478' }, // 腾讯 STUN 探路
+                    { urls: 'stun:stun.miwifi.com:3478' },
+                    // ⬇️ 真正的杀手锏：TURN 中继服务器（类似微信服务器，强行转发数据）
+                    {
+                        urls: "turn:openrelay.metered.ca:80",
+                        username: "openrelayproject",
+                        credential: "openrelayproject"
+                    },
+                    {
+                        urls: "turn:openrelay.metered.ca:443",
+                        username: "openrelayproject",
+                        credential: "openrelayproject"
+                    },
+                    {
+                        urls: "turn:openrelay.metered.ca:443?transport=tcp",
+                        username: "openrelayproject",
+                        credential: "openrelayproject"
+                    }
                 ]
             }
         });
         
         currentPeer.on('open', (id) => {
             console.log('WebRTC 节点已上线:', id);
-            renderSys(`🌐 节点已成功锚定至全网 WebRTC 穿透路由`);
+            renderSys(`🌐 节点已锚定 (已装载 TURN 中继兜底协议)`);
         });
 
         currentPeer.on('connection', (conn) => {
