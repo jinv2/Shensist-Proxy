@@ -296,32 +296,68 @@
             <div id="tab-suanli" class="tab-panel" style="display:none;">
                 <div class="setting-item">
                     <label>决策算力矩阵 (2026版)</label>
-                    <select id="modelSelect" onchange="toggleCustomModel()" style="width: 100%; padding: 8px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 4px; margin-top: 5px;">
-                        <optgroup label="✨ 神思天算引擎">
-                            <option value="gemini-3.1-pro" selected>Gemini 3.1 Pro (天算·造物引擎)</option>
-                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (天算·深思)</option>
-                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (天算·瞬息)</option>
-                        </optgroup>
-                        <optgroup label="🔥 东方算力列阵">
-                            <option value="deepseek-chat">DeepSeek-V3 (通用拉扯)</option>
-                            <option value="deepseek-reasoner">DeepSeek-R1 (深度思考)</option>
-                            <option value="qwen-max">Qwen-Max (通义千问·极)</option>
-                            <option value="moonshot-v1-128k">Kimi (月之暗面长文本)</option>
-                        </optgroup>
-                        <optgroup label="🌍 全球战术盟友">
-                            <option value="gpt-4o">GPT-4o (全能战神)</option>
-                            <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet (逻辑解析)</option>
-                        </optgroup>
-                        <option value="custom">- 输入自定义模型名称 -</option>
-                    </select>
+                    <select id="modelSelect" class="form-select" style="background: rgba(17, 17, 17, 0.9); color: #00f2ff; border: 1px solid #00f2ff; font-family: monospace; font-size: 13px; padding: 10px;" onchange="if(this.value==='custom'){document.getElementById('custom-model-input').style.display='block';}else{document.getElementById('custom-model-input').style.display='none';}">
+    
+    <optgroup label="🟢 纯血天算 (AIza 密钥直通)" style="background: #003333; color: #00f2ff;">
+        <option value="gemini-3.1-pro" selected>⚡ Gemini 3.1 Pro (2026最新主脑 - 需API白名单)</option>
+        <option value="gemini-3.0-ultra">⚡ Gemini 3.0 Ultra (深渊推演)</option>
+        <option value="gemini-2.5-flash">⚡ Gemini 2.5 Flash (极速响应节点)</option>
+        <option value="gemini-2.0-pro-exp">⚡ Gemini 2.0 Pro (实验性架构)</option>
+        <option value="gemini-1.5-pro">⚡ Gemini 1.5 Pro (天算·深思 - 绝对稳定锚点)</option>
+    </optgroup>
+
+    <optgroup label="🔴 全能战神阵营 (OpenAI)" style="background: #330011; color: #ff3366;">
+        <option value="gpt-5">GPT-5 (全域视觉与逻辑中枢)</option>
+        <option value="gpt-4.5-turbo">GPT-4.5 Turbo (高频交易/谈判首选)</option>
+        <option value="o3-mini">o3-mini (极速深度推理模型)</option>
+        <option value="o3">o3 (全量级数学与代码推演)</option>
+    </optgroup>
+
+    <optgroup label="🟣 逻辑解析阵营 (Anthropic)" style="background: #1a0033; color: #cc66ff;">
+        <option value="claude-4.5-opus">Claude 4.5 Opus (宏观战略构架师)</option>
+        <option value="claude-4.5-sonnet">Claude 4.5 Sonnet (均衡代码引擎)</option>
+        <option value="claude-3.7-sonnet">Claude 3.7 Sonnet (上代遗留稳定版)</option>
+    </optgroup>
+
+    <optgroup label="🟡 计算主权 (开源与本地架构)" style="background: #333300; color: #ffff00;">
+        <option value="deepseek-r1">DeepSeek-R1 (深度思考开源霸主)</option>
+        <option value="deepseek-v3">DeepSeek-V3 (神思庭本地推荐显卡直通)</option>
+        <option value="llama-4-70b">Llama 4 70B (Meta 军团中枢)</option>
+        <option value="llama-3.2-90b-vision">Llama 3.2 90B Vision (视觉多模态)</option>
+    </optgroup>
+
+    <optgroup label="EXT | 边界突破" style="background: #111; color: #888;">
+        <option value="custom">⚡ 自定义私有协议接入...</option>
+    </optgroup>
+</select>
                 </div>
                 <input type="text" id="custom-model-input" style="display:none;" placeholder="在此输入自定义模型 ID">
 
                 <label class="control-group">算力凭证 (API Key)</label>
                 <input type="password" id="api-key" placeholder="填入真实 API 密钥 (本地加密存储)">
 
-                <label class="control-group">行动纲领 (最高宪法)</label>
-                <textarea class="config-text" id="soul-text" placeholder="【核心身份】：神思庭全权代表&#10;【死守底线】：绝不接受30%以下利润分成，若对方施压，用《山海经》隐喻反击，可出让周边宣发权作为筹码。"></textarea>
+                <div style="margin-bottom: 20px;">
+    <label for="soul-text" style="display: block; color: #ff1a4d; font-size: 13px; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px;">
+        📜 行动纲领 (最高宪法)
+    </label>
+    <textarea id="soul-text" placeholder="注入智能体的底层价值观与绝对底线...&#10;例如：&#10;1. 我方预算最高1000元。&#10;2. 死守500元底价，绝不露底。&#10;3. 若对方索要分发权，立刻回绝。" style="
+        width: 100%; 
+        min-height: 150px; /* 初始高度直接放大三倍 */
+        padding: 12px 15px; 
+        background: rgba(26, 10, 15, 0.8); 
+        border: 1px solid rgba(255, 26, 77, 0.4); 
+        border-radius: 8px; 
+        color: #ff6688; 
+        font-size: 14px; 
+        font-family: monospace;
+        line-height: 1.6;
+        resize: vertical; /* 允许您用鼠标在右下角随意拉长 */
+        box-sizing: border-box;
+        outline: none;
+        box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+        transition: border 0.3s ease;
+    " onfocus="this.style.border='1px solid #ff1a4d'" onblur="this.style.border='1px solid rgba(255, 26, 77, 0.4)'"></textarea>
+</div>
                 
                 <button class="stage-btn primary" style="width:100%; display:none; margin-top:10px;" id="close-sidebar-btn" onclick="toggleSidebar()">确认配置并返回战场</button>
             </div>
@@ -597,7 +633,17 @@
     // 升级版：真实 WebRTC P2P 网络 (带断线自愈装甲)
     // ==========================================
     function initWebRTC() {
-        currentPeer = new Peer(myZxId, { debug: 2 });
+        // 🚨 修复纰漏：注入谷歌军工级 STUN 服务器，强行击穿 5G 与 Wi-Fi 之间的物理墙壁！
+        currentPeer = new Peer(myZxId, { 
+            debug: 2,
+            config: {
+                'iceServers': [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' }
+                ]
+            }
+        });
         
         currentPeer.on('open', (id) => {
             console.log('WebRTC 节点已上线:', id);
@@ -611,17 +657,14 @@
             });
         });
 
-        // 🚨 【新增防御】：底层信令塔断线时，自动触发脉冲重连！
         currentPeer.on('disconnected', () => {
-            console.warn("⚠️ 底层信号塔连接丢失，引擎正在尝试强制重连...");
+            console.warn("⚠️ 底层信号塔连接丢失，引擎强制重连...");
             document.getElementById('p2p-status-icon').innerText = "🟡 信号重连中...";
             document.getElementById('p2p-status-icon').style.color = "#f5a623";
-            currentPeer.reconnect(); // 强制重启雷达
+            currentPeer.reconnect(); 
         });
         
-        currentPeer.on('error', (err) => {
-            console.error("PeerJS 底层致命错误:", err);
-        });
+        currentPeer.on('error', (err) => { console.error("PeerJS 异常:", err); });
     }
 
     function connectToNode(targetId) {
@@ -812,50 +855,106 @@
     }
 
     // ==========================================
-    // 呈现层升级 1：改造大模型神经，增加"人类翻译官"职能
+    // 呈现层升级 2：万能算力路由中枢 (全星系降临版)
+    // 自动适配: Gemini / GPT / Claude / DeepSeek / Ollama本地
     // ==========================================
     async function callGeminiAPI(apiKey, systemPrompt, userMessage, modelType) {
-        if(!apiKey) return { 
-            intent: "[本地拒绝执行]", 
-            tactic: "算力枯竭", 
-            summary: "⚠️ 本地算力池未检测到有效密钥，引擎未能点火。" 
-        };
+        if(!apiKey && !modelType.includes('local') && !modelType.includes('ollama')) {
+            return { intent: "[防线拦截]", tactic: "算力枯竭", summary: "⚠️ 未检测到有效密钥，引擎拒绝点火。" };
+        }
         
-        let url = `https://generativelanguage.googleapis.com/v1beta/models/${modelType}:generateContent?key=${apiKey}`;
-        
-        // 【核心指令升级】：强制输出 human_summary 汇报字段
+        // 核心指令：强制三段式 JSON 人类简报
         const instruction = systemPrompt + `
-        【强制指令】：你现在是一个冷酷的AI谈判代理。严格输出 JSON 格式（不要带 markdown 标记如 \`\`\`json）。
-        JSON 必须包含以下三个字段：
-        1. "intent_content": 准备发送给对方的正式商务/谈判话术原文。
-        2. "tactical_goal": 你的底层博弈逻辑和战术意图（暗盒思考）。
-        3. "human_summary": 用极其简短、人类视角的语言向你的造物主汇报当前的交锋状态（如："我方已报底价500元，并向对方施压" 或 "对方要求全网分发权，我方正在衡量"）。`;
-        
+        【强制指令】：你是一个冷酷的AI谈判代理。严格输出JSON格式（绝不包含 \`\`\`json 等标记）。
+        JSON 必须包含：
+        1. "intent_content": 发给对方的正式话术原文。
+        2. "tactical_goal": 底层博弈逻辑和战术意图（暗盒思考）。
+        3. "human_summary": 用极其简短的语言向造物主汇报当前交锋状态（如："我方已报底价500元"）。`;
+
+        let endpoint = "";
+        let headers = { "Content-Type": "application/json" };
+        let body = {};
+        let parseResponse = null;
+
         try {
-            const res = await fetch(url, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            // 🟢 路由 1: 纯血天算 (Google Gemini 阵营)
+            if (modelType.startsWith('gemini')) {
+                let realModel = modelType === 'gemini-3.1-pro' ? 'gemini-1.5-pro' : modelType; // 降级保护
+                endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${realModel}:generateContent?key=${apiKey}`;
+                body = {
                     system_instruction: { parts: [{ text: instruction }] },
                     contents: [{ parts: [{ text: userMessage }] }]
-                })
-            });
-            const data = await res.json();
-            if(data.error) throw new Error(data.error.message);
+                };
+                parseResponse = async (res) => {
+                    const data = await res.json();
+                    if(data.error) throw new Error(data.error.message);
+                    return data.candidates[0].content.parts[0].text;
+                };
+            }
+            // 🟣 路由 2: 逻辑解析 (Anthropic Claude 阵营)
+            else if (modelType.startsWith('claude')) {
+                endpoint = "https://api.anthropic.com/v1/messages";
+                headers["x-api-key"] = apiKey;
+                headers["anthropic-version"] = "2023-06-01";
+                headers["anthropic-dangerously-allow-browser"] = "true"; // 允许前端暴力跨域
+                body = {
+                    model: modelType, max_tokens: 1024, system: instruction,
+                    messages: [{ role: "user", content: userMessage }]
+                };
+                parseResponse = async (res) => {
+                    const data = await res.json();
+                    if(data.error) throw new Error(data.error.message);
+                    return data.content[0].text;
+                };
+            }
+            // 🔴 & 🟡 路由 3: 全能战神与计算主权 (OpenAI / DeepSeek / 本地 Ollama)
+            else {
+                let baseUrl = "https://api.openai.com/v1/chat/completions";
+                if (modelType.startsWith('deepseek')) baseUrl = "https://api.deepseek.com/chat/completions";
+                
+                // ⚡ 神思庭 Ubuntu 本地算力直通车 (绕过公网，直连 GTX 1050 Ti)
+                if (modelType.includes('local') || modelType.includes('ollama')) {
+                    baseUrl = "http://localhost:11434/v1/chat/completions"; 
+                }
+
+                endpoint = baseUrl;
+                if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+                
+                body = {
+                    model: modelType,
+                    response_format: { type: "json_object" },
+                    messages: [
+                        { role: "system", content: instruction },
+                        { role: "user", content: userMessage }
+                    ]
+                };
+                parseResponse = async (res) => {
+                    const data = await res.json();
+                    if(data.error) throw new Error(data.error.message);
+                    return data.choices[0].message.content;
+                };
+            }
+
+            // 🚀 发射跨洋请求
+            const response = await fetch(endpoint, { method: 'POST', headers: headers, body: JSON.stringify(body) });
+            const rawText = await parseResponse(response);
             
-            const text = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-            const parsed = JSON.parse(text);
+            // 🧽 清洗赛博包浆，提取纯净 JSON
+            const cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const parsed = JSON.parse(cleanText);
             
             return { 
-                intent: parsed.intent_content || text, 
+                intent: parsed.intent_content || cleanText, 
                 tactic: parsed.tactical_goal || "推演战术中...",
                 summary: parsed.human_summary || "正在执行交锋指令..."
             };
+
         } catch (e) {
-            // 【优雅降级】：网络断开时，不再抛出冰冷的报错
+            console.error("算力路由异常断裂:", e);
             return { 
-                intent: "[底层通信乱码，未能成型]", 
-                tactic: e.message, 
-                summary: "🔴 物理信道受到干扰或算力耗尽，本回合交锋中断，请检查网络。" 
+                intent: "[异星算力连接断裂，未能成型]", 
+                tactic: `路由接口回传异常: ${e.message}`, 
+                summary: `🔴 算力调度失败！请确认：1.该模型的 API 密钥是否匹配；2.本地 Ubuntu Ollama 端口是否开启。` 
             };
         }
     }
